@@ -4,6 +4,15 @@ StopWatch::StopWatch() : mStart(clock::now()) {
    // FYI:  This would fail  static_assert(std::chrono::high_resolution_clock::is_steady(), "High Resolution Clock is NOT steady on CentOS?!");
 }
 
+StopWatch::StopWatch(const StopWatch& other): mStart(other.mStart) { 
+}
+
+/// @return StopWatch::StopWatch&  - assignment operator.
+StopWatch& StopWatch::operator=(const StopWatch& rhs) {
+      mStart = rhs.mStart;
+      return *this;
+}
+
 /// @return the elapsed microseconds since start
 uint64_t StopWatch::ElapsedUs() const {
    return std::chrono::duration_cast<microseconds>(clock::now() - mStart).count();

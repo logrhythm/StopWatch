@@ -11,11 +11,8 @@ public:
    typedef std::chrono::seconds seconds;
 
    StopWatch();
-   StopWatch(const StopWatch& other): mStart(other.mStart) { }
-   StopWatch& operator=(const StopWatch& rhs) {
-      mStart = rhs.mStart;
-      return *this;
-   }
+   StopWatch(const StopWatch&);
+   StopWatch& operator=(const StopWatch& rhs);
 
    uint64_t ElapsedUs() const;
    uint64_t ElapsedMs() const;

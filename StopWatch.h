@@ -1,7 +1,15 @@
+/* 
+ * File:   StopWatch.h
+ * Author: KjellKod
+ * From: https://github.com/KjellKod/StopWatch
+ * 
+ * Created on 2014-02-07 
+ */
+
+
 #pragma once
 #include <chrono>
 
-// From: kjellkod.wordpress.com/2012/02/06/exploring-c11-part1-time/
 
 class StopWatch {
 public:

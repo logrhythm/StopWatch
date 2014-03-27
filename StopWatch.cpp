@@ -1,3 +1,11 @@
+/* 
+ * File:   StopWatch.cpp
+ * Author: KjellKod
+ * From: https://github.com/KjellKod/StopWatch
+ * 
+ * Created on 2014-02-07 
+ */
+
 #include "StopWatch.h"
 StopWatch::StopWatch() : mStart(clock::now()) {
    static_assert(std::chrono::steady_clock::is_steady, "Serious OS/C++ library issues. Steady clock is not steady");

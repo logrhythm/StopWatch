@@ -28,7 +28,7 @@ public:
 
    std::chrono::steady_clock::time_point Restart();
 
-private:
+protected:
    clock::time_point mStart;
 };
 

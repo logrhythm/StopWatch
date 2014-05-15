@@ -98,7 +98,7 @@ include_directories(test)
   file(GLOB TEST_SRC_FILES "test/*.cpp")
 
   add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
-  target_link_libraries(UnitTestRunner gtest_170_lib boost_thread boost_system lib_g2log stdc++ tcmalloc FileIO ${PLATFORM_LINK_LIBRIES} StopWatch)
+  target_link_libraries(UnitTestRunner gtest_170_lib boost_thread boost_system lib_g2log stdc++ tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_TR1_TUPLE=0")
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_RTTI=0")
 IF( NOT(MSVC))

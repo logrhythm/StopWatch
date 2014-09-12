@@ -20,9 +20,6 @@ MESSAGE(" PROJECT_SRC = : ${PROJECT_SRC}")
 include_directories(${PROJECT_SRC})
 SET(ACTIVE_CPP0xx_DIR "Release")
 
-find_library(G2LOG lib_g2log PATHS /usr/local/probe/lib )
-find_library(BOOST_THREAD boost_thread PATHS /usr/local/probe/lib )
-find_library(BOOST_SYSTEM boost_thread PATHS /usr/local/probe/lib )
 find_library(TCMALLOC tcmalloc PATHS /usr/local/probe/lib )
 
 #cmake -DCMAKE_CXX_COMPILER=clang++ ..
@@ -98,7 +95,7 @@ include_directories(test)
   file(GLOB TEST_SRC_FILES "test/*.cpp")
 
   add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
-  target_link_libraries(UnitTestRunner gtest_170_lib boost_thread boost_system lib_g2log stdc++ tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
+  target_link_libraries(UnitTestRunner gtest_170_lib stdc++ tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_TR1_TUPLE=0")
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_RTTI=0")
 IF( NOT(MSVC))

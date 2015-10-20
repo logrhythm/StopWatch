@@ -1,5 +1,5 @@
 /* 
- * File:   LynxTimer.h
+ * File:   AlarmClock.h
  * Author: Craig Cogdill
  * Created: October 15, 2015 10:45am
  */
@@ -11,9 +11,9 @@
 #include <czmq.h>
 #include "StopWatch.h"
 
-template<typename Duration> class LynxTimer {
+template<typename Duration> class AlarmClock {
 public:
-   explicit LynxTimer(int sleepDuration) : mExpired(false), kSleepTime(sleepDuration) {
+   explicit AlarmClock(int sleepDuration) : mExpired(false), kSleepTime(sleepDuration) {
       Sleep(kSleepTime);
       mExpired = true;
    }
@@ -26,10 +26,10 @@ public:
       if (Duration(kSleepTime) <= std::chrono::microseconds(kSmallestIntervalInMS)) {
          Sleep(kSleepTime);
       } else {
-         LynxTimer::SleepInIntervals();
+         AlarmClock::SleepInIntervals();
       }
    }
-   // LynxTimer& operator=(const LynxTimer& rhs);
+   // AlarmClock& operator=(const AlarmClock& rhs);
 
 protected:
    void Sleep(int sleepTime) {

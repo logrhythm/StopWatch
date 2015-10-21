@@ -63,7 +63,7 @@ TEST_F(AlarmClockTest, DISABLED_usSimple) {
 }
 
 TEST_F(AlarmClockTest, millisecondsUnderMinimumThresholdForSplitting) {
-   unsigned int ms = 1001;
+   unsigned int ms = 1000;
    StopWatch testTimer;
    AlarmClock<milliseconds> alerter(ms);
    WaitForAlarmClockToExpire(alerter);
@@ -76,6 +76,21 @@ TEST_F(AlarmClockTest, millisecondsUnderMinimumThresholdForSplitting) {
    auto maxTime = msToMicro + GetTimingLeeway(milliseconds(ms));
    std::cout << "maxtime = " << maxTime << std::endl;
    EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " us. Should be less than " << maxTime;
+}
+
+TEST_F(AlarmClockTest, StopWatchVSAlarmClock) {
+   StopWatch stopWatch;
+   while (stopWatch.ElapsedSec() < 4) {
+      std::this_thread::sleep_for(milliseconds(1));
+   }
+   auto stopWatchFinal = stopWatch.ElapsedUs();
+
+   AlarmClock<seconds> alerter(4);
+   WaitForAlarmClockToExpire(alerter);
+   auto alarmClockFinal = stopWatch.ElapsedUs() - stopWatchFinal;
+
+   std::cout << "AlarmClock: " << alarmClockFinal << "      StopWatch:  " << stopWatchFinal << std::endl;
+
 }
 
 // TEST_F(AlarmClockTest, secondsSimple) {

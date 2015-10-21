@@ -19,7 +19,9 @@ template<typename Duration> class AlarmClock {
 public:
    explicit AlarmClock(unsigned int sleepDuration) : mExpired(false),
     mExited(false),
-    kSleepTime(sleepDuration) {
+    kSleepTime(sleepDuration),
+    kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
+    kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))) {
       StopWatch timer;
       if (Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS)) {
          std::cout << "Case 1: less than or equal to 500 milliseconds. Sleep for full time..." <<std::endl;
@@ -62,36 +64,37 @@ protected:
    
    void SleepInIntervals(StopWatch& sw) {
       StopWatch timer;
-      std::cout << "Case 2.5 a: >= 1 second." <<std::endl;
-      
-         // How many sets of 500ms sleeps do we need
-      size_t numberOfSleeps = ConvertToMilliseconds(Duration(kSleepTime)) / kSmallestIntervalInMS;
+     
+      // How many sets of 500ms sleeps do we need
+      size_t numberOfSleeps;
+
+      std::cout << "Given time divided by 500ms = " << kSleepTimeMs % kSmallestIntervalInMS << std::endl;
+      if (kSleepTimeMs % kSmallestIntervalInMS == 0) {
+         numberOfSleeps = kSleepTimeMs / kSmallestIntervalInMS - 1;
+         std::cout << "Divides exactly into 500ms" << std::endl;
+      } else {
+         numberOfSleeps = kSleepTimeMs / kSmallestIntervalInMS;
+         std::cout << "Does not divide exactly into 500ms" <<  std::endl;
+      }
       std::cout << "number of sleeps = " << numberOfSleeps <<std::endl;
 
-         // sleep for sets of 500 ms
-      std::cout << " time to loop ======> " << timer.ElapsedUs() << std::endl;
+      // sleep for sets of 500 ms
       while (KeepRunning() && numberOfSleeps > 0) {
-         std::cout << "sleeping for 500..." <<std::endl;
          Sleep(milliseconds(500));
          --numberOfSleeps; 
       }
-      std::cout << " time through loop >>> " << timer.ElapsedUs() << std::endl;
-
-         // figure out the last little bit
       auto currentSleptFor = sw.ElapsedUs();
-      std::cout << "Been sleeping for " << currentSleptFor << " out of " << ConvertToMicroseconds(Duration(kSleepTime)) << std::endl;
-      if (currentSleptFor < ConvertToMicroseconds(Duration(kSleepTime))) {
-            // microseconds ms(ConvertToMicroseconds(Duration(kSleepTime)) - currentSleptFor);
-            // Sleep(ms);
-         Sleep(microseconds(ConvertToMicroseconds(Duration(kSleepTime)) - currentSleptFor));
+
+      // figure out the last little bit
+      std::cout << "Been sleeping for " << currentSleptFor << " out of " << kSleepTimeUs << std::endl;
+      if (currentSleptFor < kSleepTimeUs) {
+         Sleep(microseconds(kSleepTimeUs - currentSleptFor));
       }
-      
+
       auto currentSleptFor2 = sw.ElapsedUs();
-      std::cout << "2nd time... Been sleeping for " << currentSleptFor2 << " out of " << ConvertToMicroseconds(Duration(kSleepTime)) << std::endl;
-      std::cout << " time through function >>> " << timer.ElapsedUs() << std::endl;
+      std::cout << "2nd time... Been sleeping for " << currentSleptFor2 << " out of " << kSleepTimeUs << std::endl;
 
       mExpired = true;
-      std::cout << "It took " << sw.ElapsedUs() << " to get through SleepInIntervals." << std::endl;
    }
 
    bool KeepRunning() {
@@ -111,6 +114,8 @@ private:
    bool mExpired;
    bool mExited;
    const int kSleepTime;
+   const int kSleepTimeMs;
+   const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
 };
 

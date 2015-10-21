@@ -11,11 +11,26 @@
 #include <czmq.h>
 #include "StopWatch.h"
 
+typedef std::chrono::microseconds microseconds;
+typedef std::chrono::milliseconds milliseconds;
+typedef std::chrono::seconds seconds;
+
 template<typename Duration> class AlarmClock {
 public:
-   explicit AlarmClock(int sleepDuration) : mExpired(false), kSleepTime(sleepDuration) {
-      Sleep(kSleepTime);
-      mExpired = true;
+   explicit AlarmClock(unsigned int sleepDuration) : mExpired(false),
+    mExited(false),
+    kSleepTime(sleepDuration) {
+      StopWatch timer;
+      if (Duration(kSleepTime) <= std::chrono::milliseconds(kSmallestIntervalInMS)) {
+         Sleep(kSleepTime);
+         mExpired = true;
+      } else {
+         AlarmClock::SleepInIntervals(timer);
+      }
+   }
+   
+   virtual ~AlarmClock() {
+      mExited = true;
    }
    
    bool has_expired() {
@@ -23,16 +38,11 @@ public:
    }
 
    void SmartSleep() {
-      if (Duration(kSleepTime) <= std::chrono::microseconds(kSmallestIntervalInMS)) {
-         Sleep(kSleepTime);
-      } else {
-         AlarmClock::SleepInIntervals();
-      }
    }
    // AlarmClock& operator=(const AlarmClock& rhs);
 
 protected:
-   void Sleep(int sleepTime) {
+   void Sleep(unsigned int sleepTime) {
       std::this_thread::sleep_for(Duration(kSleepTime)); 
    }
 
@@ -40,10 +50,12 @@ protected:
       std::this_thread::sleep_for(std::chrono::milliseconds(kSmallestIntervalInMS)); 
    }
    
-   void SleepInIntervals() {
+   void SleepInIntervals(StopWatch& sw) {
       if (Duration(kSleepTime) >= std::chrono::seconds(1)) {
-         std::cout << ":" <<std::endl;
-         size_t numberOfSleeps = kSleepTime / 2;
+         std::cout << "Time is greater than one second. Split the timing up" <<std::endl;
+         size_t numberOfSleeps = ConvertToMilliseconds(Duration(kSleepTime)) / kSmallestIntervalInMS;
+         std::cout << "number of sleeps = " << numberOfSleeps <<std::endl;
+
          while (KeepRunning() && numberOfSleeps > 0) {
             std::cout << "sleeping for 500..." <<std::endl;
             Sleep500MS();
@@ -53,16 +65,22 @@ protected:
          std::cout << "sleeping ..." <<std::endl;
          Sleep(kSleepTime);
       }
-      std::cout << " Sleeping for intervals " << std::endl;
+      mExpired = true;
+      std::cout << "It took " << sw.ElapsedUs() << " to get through SleepInIntervals." << std::endl;
    }
 
    bool KeepRunning() {
-      return mExpired == false && !zctx_interrupted;
+      return !mExpired && !mExited;
+   }
+   
+   unsigned int ConvertToMilliseconds(Duration t) {
+      return std::chrono::duration_cast<milliseconds>(t).count();
    }
    
 private:
 
    bool mExpired;
+   bool mExited;
    const int kSleepTime;
    const int kSmallestIntervalInMS = 500;
 };

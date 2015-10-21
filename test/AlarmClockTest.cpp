@@ -9,40 +9,81 @@
 #include "StopWatch.h"
 #include <chrono>
 
-#define kTimingLeeway std::chrono::milliseconds(10);
+int kTimingLeewayMicro = 0;
 
 namespace {
    template<typename T>
    void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
       while (!alerter.has_expired());
    }
+
+   template<typename Duration>
+   unsigned int ConvertToMicroSeconds(Duration t) {
+      return std::chrono::duration_cast<microseconds>(t).count();
+   }
 }
 
-TEST_F(AlarmClockTest, microsecondsSimple) {
-   unsigned int us = 100;
+TEST_F(AlarmClockTest, DISABLED_usSimple) {
+   unsigned int us = 500;
    StopWatch testTimer;
-   AlarmClock<std::chrono::microseconds> alerter(us);
+   AlarmClock<microseconds> alerter(us);
    WaitForAlarmClockToExpire(alerter);
    auto totalTime = testTimer.ElapsedUs();
-   EXPECT_TRUE(us <= totalTime) << "Slept for: " << us << ", Total Time: " << totalTime;
-   EXPECT_TRUE(totalTime <= us + 10) << "The total time was too long";
+   EXPECT_TRUE(us <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " us, should be longer than " << us;
+   auto maxTime = us + kTimingLeewayMicro;
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " us. Should be less than " << maxTime;
 }
 
-TEST_F(AlarmClockTest, millisecondsSimple) {
-   int ms = 100;
-   auto preStart = std::chrono::steady_clock::now();
-   AlarmClock<std::chrono::milliseconds> alerter(ms);
+TEST_F(AlarmClockTest, DISABLED_millisecondsUnderMinimumThresholdForSplitting) {
+   unsigned int ms = 100;
+   StopWatch testTimer;
+   AlarmClock<milliseconds> alerter(ms);
    WaitForAlarmClockToExpire(alerter);
-   auto totalTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - preStart).count();
-   EXPECT_TRUE(ms <= totalTime) << "Slept for:" << ms << ", Total Time: " << totalTime;
+   auto totalTime = testTimer.ElapsedUs();
+   std::cout << "total time =  " << totalTime << std::endl;
+   auto msToMicro = ConvertToMicroSeconds(milliseconds(ms));
+   EXPECT_TRUE(msToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " us, should be longer than " << msToMicro;
+   auto maxTime = msToMicro + kTimingLeewayMicro;
+   std::cout << "maxtime = " << maxTime << std::endl;
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " us. Should be less than " << maxTime;
 }
 
+TEST_F(AlarmClockTest, DISABLED_millisecondsAboveThresholdForSplitting) {
+   unsigned int ms = 500;
+   StopWatch testTimer;
+   AlarmClock<milliseconds> alerter(ms);
+   WaitForAlarmClockToExpire(alerter);
+   auto totalTime = testTimer.ElapsedUs();
+   std::cout << "total time =  " << totalTime << std::endl;
+   auto msToMicro = ConvertToMicroSeconds(milliseconds(ms));
+   EXPECT_TRUE(msToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " us, should be longer than " << msToMicro;
+   auto maxTime = msToMicro + kTimingLeewayMicro;
+   std::cout << "maxtime = " << maxTime << std::endl;
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " us. Should be less than " << maxTime;
+}
 
 TEST_F(AlarmClockTest, secondsSimple) {
    int sec = 1;
-   auto preStart = std::chrono::steady_clock::now();
-   AlarmClock<std::chrono::seconds> alerter(sec);
+   StopWatch testTimer;
+   AlarmClock<seconds> alerter(sec);
    WaitForAlarmClockToExpire(alerter);
-   auto totalTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - preStart).count();
-   EXPECT_TRUE(sec <= totalTime) << "Slept for: " << sec << ", Total Time: " << totalTime;
+   auto totalTime = testTimer.ElapsedUs();
+   auto secToMicro = ConvertToMicroSeconds(seconds(sec));
+   EXPECT_TRUE(secToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " sec, should be longer than " << secToMicro;
+   auto maxTime = secToMicro + kTimingLeewayMicro;
+   std::cout << "maxtime = " << maxTime << std::endl;
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
+}
+
+TEST_F(AlarmClockTest, DISABLED_secondsSimple2) {
+   int sec = 2;
+   StopWatch testTimer;
+   AlarmClock<seconds> alerter(sec);
+   WaitForAlarmClockToExpire(alerter);
+   auto totalTime = testTimer.ElapsedUs();
+   auto secToMicro = ConvertToMicroSeconds(seconds(sec));
+   EXPECT_TRUE(secToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " sec, should be longer than " << secToMicro;
+   auto maxTime = secToMicro + kTimingLeewayMicro;
+   std::cout << "maxtime = " << maxTime << std::endl;
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
 }

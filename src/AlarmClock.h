@@ -8,7 +8,9 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <atomic>
 #include <czmq.h>
+#include <future>
 #include "StopWatch.h"
 
 typedef std::chrono::microseconds microseconds;
@@ -17,36 +19,48 @@ typedef std::chrono::seconds seconds;
 
 template<typename Duration> class AlarmClock {
 public:
-   explicit AlarmClock(unsigned int sleepDuration) : mExpired(false),
-    mExited(false),
-    kSleepTime(sleepDuration),
-    kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
-    kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))) {
-      StopWatch timer;
-      if (Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS)) {
-         std::cout << "Case 1: less than or equal to 500 milliseconds. Sleep for full time..." <<std::endl;
-         Sleep(kSleepTime);
-         mExpired = true;
-      } else {
-         std::cout << "Case 2: greater than or equal to 500 milliseconds. Sleep in intervals..." <<std::endl;
-         AlarmClock::SleepInIntervals(timer);
-      }
+   explicit AlarmClock(unsigned int sleepDuration) : AlarmClock(sleepDuration, false) {
+   }
+
+   AlarmClock(unsigned int sleepDuration, const int signalToSleepOn) : mExpired(false),
+      kSleepTime(sleepDuration),
+      kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
+      kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
+      kSleepUntilTrue(signalToSleepOn),
+      mKeepRunning(new std::atomic<bool>(true)),
+      mExited(std::async(std::launch::async,
+                           &AlarmClock::AlarmClockThread,
+                           this,
+                           mKeepRunning)) {
    }
    
    virtual ~AlarmClock() {
-      mExited = true;
-   }
+      std::cout << "destructing" << std::endl;
+      mKeepRunning->store(false);
+      mExited.wait();
+ }
    
    bool has_expired() {
-      return mExpired;
+      return mExpired.load();
    }
-
-   void SmartSleep() {
-   }
-   // AlarmClock& operator=(const AlarmClock& rhs);
 
 protected:
+
+   void AlarmClockThread(std::shared_ptr<std::atomic<bool>> keepRunning) {
+      std::cout << "We sleepin yo" << std::endl;
+      if (Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS)) {
+         std::cout << "Case 1: less than or equal to 500 milliseconds. Sleep for full time..." <<std::endl;
+         Sleep(kSleepTime);
+         std::cout << "All done sleepin" << std::endl;
+         mExpired.store(true);
+      } else {
+         std::cout << "Case 2: greater than or equal to 500 milliseconds. Sleep in intervals..." <<std::endl;
+         AlarmClock::SleepInIntervals();
+      }
+   }
+   
    void Sleep(unsigned int sleepTime) {
+      std::cout << "We sleepin for real this time" << std::endl;
       std::this_thread::sleep_for(Duration(kSleepTime)); 
    }
 
@@ -61,44 +75,53 @@ protected:
    void Sleep(seconds t) {
       std::this_thread::sleep_for(t); 
    }
-   
-   void SleepInIntervals(StopWatch& sw) {
+
+   size_t GetNumberOfSleepIntervals() {
+      return (kSleepTimeMs % kSmallestIntervalInMS == 0) ?
+             ((kSleepTimeMs/kSmallestIntervalInMS) - 1) :
+             (kSleepTimeMs/kSmallestIntervalInMS);
+   }
+  
+   void SleepForRemainder(const unsigned int& currentSleptFor, const bool keepRunning) {
+      if (currentSleptFor < kSleepTimeUs && keepRunning) {
+         Sleep(microseconds(kSleepTimeUs - currentSleptFor));
+      }
+   } 
+
+   void SleepInIntervals() {
       StopWatch timer;
      
       // How many sets of 500ms sleeps do we need
-      size_t numberOfSleeps;
-
-      std::cout << "Given time divided by 500ms = " << kSleepTimeMs % kSmallestIntervalInMS << std::endl;
-      if (kSleepTimeMs % kSmallestIntervalInMS == 0) {
-         numberOfSleeps = kSleepTimeMs / kSmallestIntervalInMS - 1;
-         std::cout << "Divides exactly into 500ms" << std::endl;
-      } else {
-         numberOfSleeps = kSleepTimeMs / kSmallestIntervalInMS;
-         std::cout << "Does not divide exactly into 500ms" <<  std::endl;
-      }
+      size_t numberOfSleeps = GetNumberOfSleepIntervals();
       std::cout << "number of sleeps = " << numberOfSleeps <<std::endl;
 
+      std::cout << "Given time divided by 500ms = " << kSleepTimeMs % kSmallestIntervalInMS << std::endl;
       // sleep for sets of 500 ms
+      std::cout << "Value of kSleepUntilTrue = " << kSleepUntilTrue << std::endl;
       while (KeepRunning() && numberOfSleeps > 0) {
          Sleep(milliseconds(500));
          --numberOfSleeps; 
       }
-      auto currentSleptFor = sw.ElapsedUs();
+      auto currentSleptFor = timer.ElapsedUs();
 
-      // figure out the last little bit
-      std::cout << "Been sleeping for " << currentSleptFor << " out of " << kSleepTimeUs << std::endl;
-      if (currentSleptFor < kSleepTimeUs) {
-         Sleep(microseconds(kSleepTimeUs - currentSleptFor));
+      auto keepRunning = KeepRunning();
+
+      if (!keepRunning) {
+         std::cout << "AlarmClock caught interrupt signal... exiting." << std::endl;
+         mExpired.store(true);
+         return;
       }
 
-      auto currentSleptFor2 = sw.ElapsedUs();
+      SleepForRemainder(currentSleptFor, keepRunning);
+
+      auto currentSleptFor2 = timer.ElapsedUs();
       std::cout << "2nd time... Been sleeping for " << currentSleptFor2 << " out of " << kSleepTimeUs << std::endl;
 
-      mExpired = true;
+      mExpired.store(true);
    }
 
    bool KeepRunning() {
-      return !mExpired && !mExited;
+      return !mExpired.load() && mKeepRunning->load() && !kSleepUntilTrue;
    }
    
    unsigned int ConvertToMilliseconds(Duration t) {
@@ -111,12 +134,14 @@ protected:
    
 private:
 
-   bool mExpired;
-   bool mExited;
+   std::atomic<bool> mExpired;
    const int kSleepTime;
    const int kSleepTimeMs;
    const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
+   const int kSleepUntilTrue;
+   std::shared_ptr<std::atomic<bool>> mKeepRunning;
+   std::future<void> mExited;
 };
 
 

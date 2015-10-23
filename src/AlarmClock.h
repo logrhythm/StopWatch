@@ -38,6 +38,14 @@ public:
       return mExpired.load();
    }
 
+   int SleepTimeUs() {
+      return kSleepTimeUs;
+   }
+   
+   int SleepTimeMs() {
+      return kSleepTimeMs;
+   }
+
 protected:
 
    void AlarmClockThread(std::shared_ptr<std::atomic<bool>> keepRunning) {
@@ -75,8 +83,8 @@ protected:
              (kSleepTimeMs/kSmallestIntervalInMS);
    }
   
-   void SleepForRemainder(const unsigned int& currentSleptFor, const bool keepRunning) {
-      if (currentSleptFor < kSleepTimeUs && keepRunning) {
+   void SleepForRemainder(const unsigned int& currentSleptFor) {
+      if (currentSleptFor < kSleepTimeUs) {
          Sleep(microseconds(kSleepTimeUs - currentSleptFor));
       }
    } 
@@ -89,12 +97,11 @@ protected:
          --numberOfSleeps; 
       }
       auto currentSleptFor = timer.ElapsedUs();
-      auto keepRunning = KeepRunning();
-      if (!keepRunning) {
+      if (!KeepRunning()) {
          mExpired.store(true);
          return;
       }
-      SleepForRemainder(currentSleptFor, keepRunning);
+      SleepForRemainder(currentSleptFor);
       mExpired.store(true);
    }
 

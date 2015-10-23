@@ -29,6 +29,11 @@ namespace {
    unsigned int ConvertToMicroSeconds(Duration t) {
       return std::chrono::duration_cast<microseconds>(t).count();
    }
+   
+   template<typename Duration>
+   unsigned int ConvertToMilliSeconds(Duration t) {
+      return std::chrono::duration_cast<milliseconds>(t).count();
+   }
 
    template <typename Duration>
    int GetTimingLeeway(Duration t) {
@@ -48,6 +53,42 @@ namespace {
          return kTimingLeeway * (timeInMicro / k500MsInMicro);
       }
    }
+}
+
+TEST_F(AlarmClockTest, GetUsSleepTimeInUs) {
+   int us = 123456;
+   AlarmClock<microseconds> alerter(us);
+   EXPECT_EQ(us, alerter.SleepTimeUs());
+}
+
+TEST_F(AlarmClockTest, GetUsSleepTimeInMs) {
+   int us = 123456;
+   AlarmClock<microseconds> alerter(us);
+   EXPECT_EQ(ConvertToMilliSeconds(microseconds(us)), alerter.SleepTimeMs());
+}
+
+TEST_F(AlarmClockTest, GetMsSleepTimeInMs) {
+   int ms = 123456;
+   AlarmClock<milliseconds> alerter(ms);
+   EXPECT_EQ(ms, alerter.SleepTimeMs());
+}
+
+TEST_F(AlarmClockTest, GetMsSleepTimeInUs) {
+   int ms = 123456;
+   AlarmClock<milliseconds> alerter(ms);
+   EXPECT_EQ(ConvertToMicroSeconds(milliseconds(ms)), alerter.SleepTimeUs());
+}
+
+TEST_F(AlarmClockTest, GetSecSleepTimeInUs) {
+   int sec = 1;
+   AlarmClock<seconds> alerter(sec);
+   EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), alerter.SleepTimeUs());
+}
+
+TEST_F(AlarmClockTest, GetSecSleepTimeInMs) {
+   int sec = 1;
+   AlarmClock<seconds> alerter(sec);
+   EXPECT_EQ(ConvertToMilliSeconds(seconds(sec)), alerter.SleepTimeMs());
 }
 
 TEST_F(AlarmClockTest, microsecondsLessThan500ms) {

@@ -19,14 +19,10 @@ typedef std::chrono::seconds seconds;
 
 template<typename Duration> class AlarmClock {
 public:
-   explicit AlarmClock(unsigned int sleepDuration) : AlarmClock(sleepDuration, false) {
-   }
-
-   AlarmClock(unsigned int sleepDuration, const int signalToSleepOn) : mExpired(false),
+   AlarmClock(unsigned int sleepDuration) : mExpired(false),
       kSleepTime(sleepDuration),
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
-      kSleepUntilTrue(signalToSleepOn),
       mKeepRunning(new std::atomic<bool>(true)),
       mExited(std::async(std::launch::async,
                            &AlarmClock::AlarmClockThread,
@@ -96,12 +92,11 @@ protected:
          return;
       }
       SleepForRemainder(currentSleptFor, keepRunning);
-      auto currentSleptFor2 = timer.ElapsedUs();
       mExpired.store(true);
    }
 
    bool KeepRunning() {
-      return !mExpired.load() && mKeepRunning->load() && !kSleepUntilTrue;
+      return !mExpired.load() && mKeepRunning->load();
    }
    
    unsigned int ConvertToMilliseconds(Duration t) {
@@ -119,7 +114,6 @@ private:
    const int kSleepTimeMs;
    const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
-   const int kSleepUntilTrue;
    std::shared_ptr<std::atomic<bool>> mKeepRunning;
    std::future<void> mExited;
 };

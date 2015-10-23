@@ -22,7 +22,8 @@ public:
       kSleepTime(sleepDuration),
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
-      mKeepRunning(new std::atomic<bool>(true)),
+      mKeepRunning(new bool(true)),
+      // mKeepRunning(new std::atomic<bool>(true)),
       mExited(std::async(std::launch::async,
                          &AlarmClock::AlarmClockThread,
                          this,
@@ -30,7 +31,7 @@ public:
    }
    
    virtual ~AlarmClock() {
-      mKeepRunning->store(false);
+      mKeepRunning = false;
       mExited.wait();
    }
    
@@ -48,7 +49,7 @@ public:
 
 protected:
 
-   void AlarmClockThread(std::shared_ptr<std::atomic<bool>> keepRunning) {
+   void AlarmClockThread(std::shared_ptr<bool> keepRunning) {
       SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
    }
    
@@ -62,7 +63,7 @@ protected:
    }
 
    void Sleep(unsigned int sleepTime) {
-      std::this_thread::sleep_for(Duration(kSleepTime)); 
+      std::this_thread::sleep_for(Duration(sleepTime)); 
    }
 
    void Sleep(microseconds t) {
@@ -93,7 +94,7 @@ protected:
       StopWatch timer;
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
       while (KeepRunning() && numberOfSleeps > 0) {
-         Sleep(milliseconds(500));
+         Sleep(milliseconds(kSmallestIntervalInMS));
          --numberOfSleeps; 
       }
       auto currentSleptFor = timer.ElapsedUs();
@@ -106,7 +107,7 @@ protected:
    }
 
    bool KeepRunning() {
-      return !mExpired.load() && mKeepRunning->load();
+      return !mExpired.load() && mKeepRunning;
    }
    
    unsigned int ConvertToMilliseconds(Duration t) {
@@ -124,7 +125,8 @@ private:
    const int kSleepTimeMs;
    const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
-   std::shared_ptr<std::atomic<bool>> mKeepRunning;
+   //std::shared_ptr<std::atomic<bool>> mKeepRunning;
+   std::shared_ptr<bool> mKeepRunning;
    std::future<void> mExited;
 };
 

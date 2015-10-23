@@ -183,11 +183,11 @@ TEST_F(AlarmClockTest, AlarmClockVSStopWatch) {
    size_t swCount = 0;
    size_t acCount = 0;
    StopWatch timer;
-   while(timer.ElapsedSec() < 1) {
+   while(timer.ElapsedSec() < 10) {
       ++swCount;
    }
    auto swTime = timer.ElapsedUs();
-   AlarmClock<seconds> alerter(1);
+   AlarmClock<seconds> alerter(10);
    while(!alerter.Expired()) {
       ++acCount;
    }

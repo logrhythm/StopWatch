@@ -35,7 +35,6 @@ public:
    }
    
    virtual ~AlarmClock() {
-      std::cout << "destructing" << std::endl;
       mKeepRunning->store(false);
       mExited.wait();
  }
@@ -47,20 +46,15 @@ public:
 protected:
 
    void AlarmClockThread(std::shared_ptr<std::atomic<bool>> keepRunning) {
-      std::cout << "We sleepin yo" << std::endl;
       if (Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS)) {
-         std::cout << "Case 1: less than or equal to 500 milliseconds. Sleep for full time..." <<std::endl;
          Sleep(kSleepTime);
-         std::cout << "All done sleepin" << std::endl;
          mExpired.store(true);
       } else {
-         std::cout << "Case 2: greater than or equal to 500 milliseconds. Sleep in intervals..." <<std::endl;
          AlarmClock::SleepInIntervals();
       }
    }
    
    void Sleep(unsigned int sleepTime) {
-      std::cout << "We sleepin for real this time" << std::endl;
       std::this_thread::sleep_for(Duration(kSleepTime)); 
    }
 
@@ -90,33 +84,19 @@ protected:
 
    void SleepInIntervals() {
       StopWatch timer;
-     
-      // How many sets of 500ms sleeps do we need
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
-      std::cout << "number of sleeps = " << numberOfSleeps <<std::endl;
-
-      std::cout << "Given time divided by 500ms = " << kSleepTimeMs % kSmallestIntervalInMS << std::endl;
-      // sleep for sets of 500 ms
-      std::cout << "Value of kSleepUntilTrue = " << kSleepUntilTrue << std::endl;
       while (KeepRunning() && numberOfSleeps > 0) {
          Sleep(milliseconds(500));
          --numberOfSleeps; 
       }
       auto currentSleptFor = timer.ElapsedUs();
-
       auto keepRunning = KeepRunning();
-
       if (!keepRunning) {
-         std::cout << "AlarmClock caught interrupt signal... exiting." << std::endl;
          mExpired.store(true);
          return;
       }
-
       SleepForRemainder(currentSleptFor, keepRunning);
-
       auto currentSleptFor2 = timer.ElapsedUs();
-      std::cout << "2nd time... Been sleeping for " << currentSleptFor2 << " out of " << kSleepTimeUs << std::endl;
-
       mExpired.store(true);
    }
 

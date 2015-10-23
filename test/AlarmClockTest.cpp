@@ -16,9 +16,13 @@
 int kTimingLeeway = 250;
 
 namespace {
+   typedef std::chrono::microseconds microseconds;
+   typedef std::chrono::milliseconds milliseconds;
+   typedef std::chrono::seconds seconds;
+   
    template<typename T>
    void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
-      while (!alerter.has_expired());
+      while (!alerter.Expired());
    }
 
    template<typename Duration>
@@ -143,7 +147,7 @@ TEST_F(AlarmClockTest, AlarmClockVSStopWatch) {
    }
    auto swTime = timer.ElapsedUs();
    AlarmClock<seconds> alerter(1);
-   while(!alerter.has_expired()) {
+   while(!alerter.Expired()) {
       ++acCount;
    }
    auto acTime = timer.ElapsedUs();

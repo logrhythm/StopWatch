@@ -6,19 +6,18 @@
 
 #pragma once
 #include <chrono>
-#include <iostream>
 #include <thread>
 #include <atomic>
-#include <czmq.h>
 #include <future>
 #include "StopWatch.h"
 
-typedef std::chrono::microseconds microseconds;
-typedef std::chrono::milliseconds milliseconds;
-typedef std::chrono::seconds seconds;
 
 template<typename Duration> class AlarmClock {
 public:
+   typedef std::chrono::microseconds microseconds;
+   typedef std::chrono::milliseconds milliseconds;
+   typedef std::chrono::seconds seconds;
+   
    AlarmClock(unsigned int sleepDuration) : mExpired(false),
       kSleepTime(sleepDuration),
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
@@ -35,7 +34,7 @@ public:
       mExited.wait();
    }
    
-   bool has_expired() {
+   bool Expired() {
       return mExpired.load();
    }
 

@@ -25,15 +25,15 @@ public:
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
       mKeepRunning(new std::atomic<bool>(true)),
       mExited(std::async(std::launch::async,
-                           &AlarmClock::AlarmClockThread,
-                           this,
-                           mKeepRunning)) {
+                         &AlarmClock::AlarmClockThread,
+                         this,
+                         mKeepRunning)) {
    }
    
    virtual ~AlarmClock() {
       mKeepRunning->store(false);
       mExited.wait();
- }
+   }
    
    bool has_expired() {
       return mExpired.load();
@@ -42,14 +42,18 @@ public:
 protected:
 
    void AlarmClockThread(std::shared_ptr<std::atomic<bool>> keepRunning) {
-      if (Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS)) {
-         Sleep(kSleepTime);
-         mExpired.store(true);
-      } else {
-         AlarmClock::SleepInIntervals();
-      }
+      SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
    }
    
+   bool SleepTimeIsBelow500ms() {
+      return Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS);
+   }
+
+   void SleepForFullAmount() {
+      Sleep(kSleepTime);
+      mExpired.store(true);
+   }
+
    void Sleep(unsigned int sleepTime) {
       std::this_thread::sleep_for(Duration(kSleepTime)); 
    }

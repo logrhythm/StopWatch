@@ -6,7 +6,6 @@
 
 #pragma once
 #include <chrono>
-#include <memory> //atomic store
 #include <thread>
 #include <atomic>
 #include <future>

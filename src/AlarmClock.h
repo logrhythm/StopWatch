@@ -77,6 +77,15 @@ protected:
       std::this_thread::sleep_for(t); 
    }
 
+   // If 500ms is NOT an even divisor of the amount of sleep
+   //    time given, should sleep for every multiple of 500ms
+   //    that divides, then check the remaining time and just
+   //    sleep for only that last bit.
+   //
+   // If 500ms IS an even divisor of the sleep time, sleep for 
+   //    all but one multiple of 500ms. There is overhead induced
+   //    by the while loop, so if the full amount of time is slept,
+   //    the precision of the alarm clock will suffer.
    size_t GetNumberOfSleepIntervals() {
       return (kSleepTimeMs % kSmallestIntervalInMS == 0) ?
              ((kSleepTimeMs/kSmallestIntervalInMS) - 1) :

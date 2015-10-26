@@ -6,6 +6,7 @@
 
 #pragma once
 #include <chrono>
+#include <memory> //atomic store
 #include <thread>
 #include <atomic>
 #include <future>
@@ -23,7 +24,6 @@ public:
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
       mKeepRunning(new bool(true)),
-      // mKeepRunning(new std::atomic<bool>(true)),
       mExited(std::async(std::launch::async,
                          &AlarmClock::AlarmClockThread,
                          this,
@@ -125,7 +125,6 @@ private:
    const int kSleepTimeMs;
    const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
-   //std::shared_ptr<std::atomic<bool>> mKeepRunning;
    std::shared_ptr<bool> mKeepRunning;
    std::future<void> mExited;
 };

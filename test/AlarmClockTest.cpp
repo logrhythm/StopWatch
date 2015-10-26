@@ -178,21 +178,3 @@ TEST_F(AlarmClockTest, secondsSimple) {
    EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
    std::cout << "Timeout was set for " << secToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
 }
-
-TEST_F(AlarmClockTest, AlarmClockVSStopWatch) {
-   size_t swCount = 0;
-   size_t acCount = 0;
-   StopWatch timer;
-   while(timer.ElapsedSec() < 10) {
-      ++swCount;
-   }
-   auto swTime = timer.ElapsedUs();
-   AlarmClock<seconds> alerter(10);
-   while(!alerter.Expired()) {
-      ++acCount;
-   }
-   auto acTime = timer.ElapsedUs();
-
-   std::cout << "StopWatch count: "<<swCount<<"     AlarmClock count: "<<acCount<<std::endl;
-   std::cout << "StopWatch took "<<swTime<<" us...     AlarmClock took "<<acTime-swTime<<std::endl;
-}

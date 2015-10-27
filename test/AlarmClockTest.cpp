@@ -178,3 +178,14 @@ TEST_F(AlarmClockTest, secondsSimple) {
    EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
    std::cout << "Timeout was set for " << secToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
 }
+
+TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
+   int sec = 60;
+   StopWatch testTimer;
+   std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec));
+   std::this_thread::sleep_for(seconds(1));
+   EXPECT_EQ(ConvertToMilliSeconds(seconds(sec)), acPtr->SleepTimeMs());
+   EXPECT_FALSE(acPtr->Expired());
+   acPtr.reset();
+   EXPECT_TRUE(testTimer.ElapsedMs() < 10000);
+}

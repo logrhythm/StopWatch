@@ -130,8 +130,8 @@ private:
    const int kSleepTime;
    const int kSleepTimeMs;
    const int kSleepTimeUs;
-   const int kSmallestIntervalInMS = 500;
    std::future<void> mExited;
+   const int kSmallestIntervalInMS = 500;
 };
 
 

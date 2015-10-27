@@ -22,15 +22,13 @@ public:
       kSleepTime(sleepDuration),
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
-      mKeepRunning(new bool(true)),
       mExited(std::async(std::launch::async,
                          &AlarmClock::AlarmClockThread,
-                         this,
-                         mKeepRunning)) {
+                         this)) {
    }
    
    virtual ~AlarmClock() {
-      mKeepRunning = false;
+      mExpired.store(true);
       mExited.wait();
    }
    
@@ -48,7 +46,7 @@ public:
 
 protected:
 
-   void AlarmClockThread(std::shared_ptr<bool> keepRunning) {
+   void AlarmClockThread() {
       SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
    }
    
@@ -115,7 +113,7 @@ protected:
    }
 
    bool KeepRunning() {
-      return !mExpired.load() && mKeepRunning;
+      return !mExpired.load();
    }
    
    unsigned int ConvertToMilliseconds(Duration t) {
@@ -133,7 +131,6 @@ private:
    const int kSleepTimeMs;
    const int kSleepTimeUs;
    const int kSmallestIntervalInMS = 500;
-   std::shared_ptr<bool> mKeepRunning;
    std::future<void> mExited;
 };
 

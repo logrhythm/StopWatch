@@ -104,11 +104,9 @@ protected:
          --numberOfSleeps; 
       }
       auto currentSleptFor = timer.ElapsedUs();
-      if (!KeepRunning()) {
-         mExpired.store(true);
-         return;
+      if (KeepRunning()) {
+         SleepForRemainder(currentSleptFor);
       }
-      SleepForRemainder(currentSleptFor);
       mExpired.store(true);
    }
 

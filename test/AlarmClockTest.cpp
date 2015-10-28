@@ -174,7 +174,7 @@ TEST_F(AlarmClockTest, secondsSimple) {
    auto totalTime = testTimer.ElapsedUs();
    auto secToMicro = ConvertToMicroSeconds(seconds(sec));
    EXPECT_TRUE(secToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " sec, should be longer than " << secToMicro;
-   auto maxTime = secToMicro + (kTimingLeeway * sec);
+   auto maxTime = secToMicro + GetTimingLeeway(seconds(sec));
    EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
    std::cout << "Timeout was set for " << secToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
 }
@@ -188,4 +188,51 @@ TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    EXPECT_FALSE(acPtr->Expired());
    acPtr.reset();
    EXPECT_TRUE(testTimer.ElapsedMs() < 10000);
+}
+
+TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
+   // First run
+   int ms = 750;
+   StopWatch testTimer;
+   AlarmClock<milliseconds> alerter(ms);
+   WaitForAlarmClockToExpire(alerter);
+   auto totalTime = testTimer.ElapsedUs();
+   auto msToMicro = ConvertToMicroSeconds(milliseconds(ms));
+   EXPECT_TRUE(msToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " sec, should be longer than " << msToMicro;
+   auto maxTime = msToMicro + GetTimingLeeway(milliseconds(ms));
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
+   std::cout << "Timeout was set for " << msToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
+   
+   // Reset after AlarmClock has expired
+   auto secondStartTime = testTimer.ElapsedUs();
+   alerter.Reset();
+   WaitForAlarmClockToExpire(alerter);
+   auto totalTime2 = testTimer.ElapsedUs() - secondStartTime;
+   EXPECT_TRUE(msToMicro <= totalTime2) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime2 << " sec, should be longer than " << msToMicro;
+   EXPECT_TRUE(totalTime2 <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime2 << " sec. Should be less than " << maxTime;
+   std::cout << "Timeout (after reset) was set for " << msToMicro << " us. Actually slept for " << totalTime2 << " us. Max timeout: " << maxTime << std::endl;
+}
+
+TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
+   // First run
+   int ms = 750;
+   auto msToMicro = ConvertToMicroSeconds(milliseconds(ms));
+   StopWatch testTimer;
+   AlarmClock<milliseconds> alerter(ms);
+   std::this_thread::sleep_for(milliseconds(200));
+
+   // Reset the AlarmClock before it expires
+   alerter.Reset();
+   auto timeToReset = testTimer.ElapsedUs();
+   std::cout << "AlarmClock set for " << msToMicro << " us, only slept for " << timeToReset << " before being reset." <<  std::endl;
+   EXPECT_TRUE(timeToReset < msToMicro) << "AlarmClock slept for full amount of time although it was rest before it had expired.";
+
+   // Let second run expire
+   WaitForAlarmClockToExpire(alerter);
+   auto totalTime = testTimer.ElapsedUs() - timeToReset;
+   EXPECT_TRUE(msToMicro <= totalTime) << "AlarmClock didn't sleep for long enough. Slept for: " << totalTime << " sec, should be longer than " << msToMicro;
+   auto maxTime = msToMicro + GetTimingLeeway(milliseconds(ms));
+   EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
+   std::cout << "Timeout (after reset) was set for " << msToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
+   
 }

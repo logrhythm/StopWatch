@@ -28,12 +28,19 @@ public:
    }
    
    virtual ~AlarmClock() {
-      mExpired.store(true);
-      mExited.wait();
+      StopBackgroundThread();
    }
    
    bool Expired() {
       return mExpired.load();
+   }
+
+   void Reset() {
+      if (!mExpired.load()) {
+         StopBackgroundThread();
+      }
+      mExpired.store(false); 
+      mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
    }
 
    int SleepTimeUs() {
@@ -49,7 +56,12 @@ protected:
    void AlarmClockThread() {
       SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
    }
-   
+  
+   void StopBackgroundThread() {
+      mExpired.store(true);
+      mExited.wait();
+   }
+
    bool SleepTimeIsBelow500ms() {
       return Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS);
    }

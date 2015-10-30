@@ -9,7 +9,7 @@ TEST_F(ToolsTestStopWatch, UsSimple) {
    auto preStart = std::chrono::steady_clock::now();
    StopWatch watch{};
    auto elapsedUs = watch.ElapsedUs();
-   auto preElapsedUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - preStart).count();
+   auto preElapsedUs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - preStart).count());
 
    EXPECT_TRUE(elapsedUs <= preElapsedUs) << "elapsedUs:" << elapsedUs << ", preElapsedUs:" << preElapsedUs;
 }
@@ -20,7 +20,7 @@ TEST_F(ToolsTestStopWatch, UsSimpleAfterSleep) {
    StopWatch watch;
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
    auto elapsedUs = watch.ElapsedUs();
-   auto preElapsedUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - preStart).count();
+   auto preElapsedUs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - preStart).count());
 
 
    EXPECT_TRUE(elapsedUs <= preElapsedUs) << "elapsedUs:" << elapsedUs << ", preElapsedUs:" << preElapsedUs;
@@ -33,7 +33,7 @@ TEST_F(ToolsTestStopWatch, MsSimpleAfterSleep) {
    StopWatch watch;
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
    auto elapsedMs = watch.ElapsedMs();
-   auto preElapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - preStart).count();
+   auto preElapsedMs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - preStart).count());
 
 
    EXPECT_TRUE(elapsedMs <= preElapsedMs) << "elapsedUs:" << elapsedMs << ", preElapsedMs:" << preElapsedMs;
@@ -44,7 +44,7 @@ TEST_F(ToolsTestStopWatch, SecSimpleAfterSleep) {
    StopWatch watch;
    std::this_thread::sleep_for(std::chrono::seconds(1));
    auto elapsedSec = watch.ElapsedSec();
-   auto preElapsedSec = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - preStart).count();
+   auto preElapsedSec = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - preStart).count());
 
 
    EXPECT_TRUE(elapsedSec <= preElapsedSec) << "elapsedSec:" << elapsedSec << ", preElapsedSec:" << preElapsedSec;
@@ -84,7 +84,7 @@ TEST_F(ToolsTestStopWatch, ComparisonsWithOld) {
    StopWatch watch;
    auto oldStart = std::time(NULL);
    std::this_thread::sleep_for(std::chrono::seconds(1));
-   auto oldElapsed = (std::time(NULL) - oldStart);
+   auto oldElapsed = static_cast<uint64_t>(std::time(NULL) - oldStart);
    auto elapsedSec = watch.ElapsedSec();
 
    EXPECT_TRUE(elapsedSec >= oldElapsed);
@@ -96,7 +96,6 @@ TEST_F(ToolsTestStopWatch, ComparisonsWithOld) {
 
 /* ThreadSafeStopWatch tests*/
 TEST_F(ToolsTestStopWatch, ThreadSafeSecSimpleAfterSleep) {
-   auto preStart = std::chrono::steady_clock::now();
    ThreadSafeStopWatch threadSafeWatch;
    auto elapsedSec = threadSafeWatch.GetStopWatch().ElapsedSec();
    std::this_thread::sleep_for(std::chrono::seconds(1));

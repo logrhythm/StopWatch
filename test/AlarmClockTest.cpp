@@ -6,6 +6,7 @@
 
 #include "AlarmClockTest.h"
 #include "AlarmClock.h"
+#include "MockAlarmClock.h"
 #include "StopWatch.h"
 #include <chrono>
 
@@ -234,5 +235,8 @@ TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
    auto maxTime = msToMicro + GetTimingLeeway(milliseconds(ms));
    EXPECT_TRUE(totalTime <= maxTime) << "AlarmClock took too long to expire. Took " << totalTime << " sec. Should be less than " << maxTime;
    std::cout << "Timeout (after reset) was set for " << msToMicro << " us. Actually slept for " << totalTime << " us. Max timeout: " << maxTime << std::endl;
-   
+}
+
+TEST_F(AlarmClockTest, MockAlarmClock) {
+   MockAlarmClock<seconds> alerter(1);
 }

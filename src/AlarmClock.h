@@ -9,6 +9,7 @@
 #include <thread>
 #include <atomic>
 #include <future>
+#include <iostream>
 #include "StopWatch.h"
 
 
@@ -25,6 +26,7 @@ public:
       mExited(std::async(std::launch::async,
                          &AlarmClock::AlarmClockThread,
                          this)) {
+         std::cout << "AC: Hello Craig" << std::endl;
    }
    
    virtual ~AlarmClock() {
@@ -66,24 +68,24 @@ protected:
       return Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS);
    }
 
-   void SleepForFullAmount() {
+   virtual void SleepForFullAmount() {
       Sleep(kSleepTime);
       mExpired.store(true);
    }
 
-   void Sleep(unsigned int sleepTime) {
+   virtual void Sleep(unsigned int sleepTime) {
       std::this_thread::sleep_for(Duration(sleepTime)); 
    }
 
-   void Sleep(microseconds t) {
+   virtual void Sleep(microseconds t) {
       std::this_thread::sleep_for(t);
    }
 
-   void Sleep(milliseconds t) {
+   virtual void Sleep(milliseconds t) {
       std::this_thread::sleep_for(t); 
    }
    
-   void Sleep(seconds t) {
+   virtual void Sleep(seconds t) {
       std::this_thread::sleep_for(t); 
    }
 
@@ -102,13 +104,14 @@ protected:
              (kSleepTimeMs/kSmallestIntervalInMS);
    }
   
-   void SleepForRemainder(const unsigned int& currentSleptFor) {
+   virtual void SleepForRemainder(const unsigned int& currentSleptFor) {
       if (currentSleptFor < kSleepTimeUs) {
          Sleep(microseconds(kSleepTimeUs - currentSleptFor));
       }
    } 
 
-   void SleepInIntervals() {
+   virtual void SleepInIntervals() {
+      std::cout << "AC: Sleep in intervals" << std::endl;
       StopWatch timer;
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
       while (KeepRunning() && numberOfSleeps > 0) {

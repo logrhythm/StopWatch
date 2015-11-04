@@ -1,42 +1,32 @@
 /* 
- * File:   AlarmClock.h
+ * File:   MockAlarmClock.h
  * Author: Craig Cogdill
- * Created: October 15, 2015 10:45am
+ * Created: November 3, 2015 2pm
  */
 
 #pragma once
-#include <chrono>
-#include <thread>
-#include <atomic>
-#include <future>
 #include <iostream>
-#include "StopWatch.h"
+#include <atomic>
 
 
-template<typename Duration> class AlarmClock {
-public:
+template<typename Duration> class MockAlarmClock {
+public:   
    typedef std::chrono::microseconds microseconds;
    typedef std::chrono::milliseconds milliseconds;
    typedef std::chrono::seconds seconds;
-  
-   static AlarmClock AlarmClockCreator(unsigned int sleepDuration) {
-      AlarmClock clock(sleepDuration);
-      clock.mExited = std::move(std::async(std::launch::async,
-                         &AlarmClock::AlarmClockThread,
-                         &clock));
-      return std::move(clock);
-   }  
-
-   AlarmClock(unsigned int sleepDuration) : mExpired(false),
+   
+   MockAlarmClock(unsigned int sleepDuration) : 
+      mThreadAlive(false),
+      mExpired(false),
       kSleepTime(sleepDuration),
       kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
       kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
+      kNumberOfSleepIntervals(GetNumberOfSleepIntervals()),
       mExited(std::async(std::launch::async,
-                         &AlarmClock::AlarmClockThread,
-                         this)) {
-   }
+                         &MockAlarmClock::MockAlarmClockThread,
+                         this)) {}
    
-   virtual ~AlarmClock() {
+   virtual ~MockAlarmClock() {
       StopBackgroundThread();
    }
    
@@ -48,8 +38,9 @@ public:
       if (!mExpired.load()) {
          StopBackgroundThread();
       }
+      kNumberOfSleepIntervals = 0;
       mExpired.store(false); 
-      mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
+      mExited = std::async(std::launch::async, &MockAlarmClock::MockAlarmClockThread, this);
    }
 
    int SleepTimeUs() {
@@ -60,9 +51,18 @@ public:
       return kSleepTimeMs;
    }
 
+   size_t GetNumberOfSleeps() {
+      return kNumberOfSleepIntervals;
+   }
+
+   bool ThreadIsAlive() {
+      return mThreadAlive.load();
+   }
+
 protected:
 
-   void AlarmClockThread() {
+   void MockAlarmClockThread() {
+      mThreadAlive.store(true);
       SleepTimeIsBelow500ms() ? SleepForFullAmount() : SleepInIntervals();
    }
   
@@ -76,25 +76,16 @@ protected:
    }
 
    void SleepForFullAmount() {
-      Sleep(kSleepTime);
       mExpired.store(true);
    }
 
-   void Sleep(unsigned int sleepTime) {
-      std::this_thread::sleep_for(Duration(sleepTime)); 
-   }
+   void Sleep(unsigned int sleepTime) {}
 
-   void Sleep(microseconds t) {
-      std::this_thread::sleep_for(t);
-   }
+   void Sleep(microseconds t) {}
 
-   void Sleep(milliseconds t) {
-      std::this_thread::sleep_for(t); 
-   }
+   void Sleep(milliseconds t) {}
    
-   void Sleep(seconds t) {
-      std::this_thread::sleep_for(t); 
-   }
+   void Sleep(seconds t) {}
 
    // If 500ms is NOT an even divisor of the amount of sleep
    //    time given, should sleep for every multiple of 500ms
@@ -106,9 +97,11 @@ protected:
    //    by the while loop, so if the full amount of time is slept,
    //    the precision of the alarm clock will suffer.
    size_t GetNumberOfSleepIntervals() {
-      return (kSleepTimeMs % kSmallestIntervalInMS == 0) ?
+      size_t sleepIntervals = (kSleepTimeMs % kSmallestIntervalInMS == 0) ?
              ((kSleepTimeMs/kSmallestIntervalInMS) - 1) :
              (kSleepTimeMs/kSmallestIntervalInMS);
+      kNumberOfSleepIntervals = sleepIntervals;
+      return sleepIntervals;
    }
   
    void SleepForRemainder(const unsigned int& currentSleptFor) {
@@ -118,7 +111,6 @@ protected:
    } 
 
    void SleepInIntervals() {
-      std::cout << "AC: Sleep in intervals" << std::endl;
       StopWatch timer;
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
       while (KeepRunning() && numberOfSleeps > 0) {
@@ -146,12 +138,12 @@ protected:
    
 private:
 
+   const int kSmallestIntervalInMS = 500;
+   std::atomic<bool> mThreadAlive;
    std::atomic<bool> mExpired;
    const int kSleepTime;
    const int kSleepTimeMs;
    const int kSleepTimeUs;
+   size_t kNumberOfSleepIntervals = 0;
    std::future<void> mExited;
-   const int kSmallestIntervalInMS = 500;
 };
-
-

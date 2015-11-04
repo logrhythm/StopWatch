@@ -9,7 +9,6 @@
 #include <thread>
 #include <atomic>
 #include <future>
-#include <iostream>
 #include "StopWatch.h"
 
 
@@ -18,14 +17,6 @@ public:
    typedef std::chrono::microseconds microseconds;
    typedef std::chrono::milliseconds milliseconds;
    typedef std::chrono::seconds seconds;
-  
-   static AlarmClock AlarmClockCreator(unsigned int sleepDuration) {
-      AlarmClock clock(sleepDuration);
-      clock.mExited = std::move(std::async(std::launch::async,
-                         &AlarmClock::AlarmClockThread,
-                         &clock));
-      return std::move(clock);
-   }  
 
    AlarmClock(unsigned int sleepDuration) : mExpired(false),
       kSleepTime(sleepDuration),

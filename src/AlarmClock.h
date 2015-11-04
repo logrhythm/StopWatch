@@ -54,7 +54,7 @@ public:
 protected:
 
    void AlarmClockThread() {
-      SleepTimeIsBelow500ms() ? SleepForFullAmount() : SleepInIntervals();
+      SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
    }
   
    void StopBackgroundThread() {
@@ -109,7 +109,6 @@ protected:
    } 
 
    void SleepInIntervals() {
-      std::cout << "AC: Sleep in intervals" << std::endl;
       StopWatch timer;
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
       while (KeepRunning() && numberOfSleeps > 0) {

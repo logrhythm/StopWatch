@@ -8,7 +8,6 @@
 #include <chrono>
 #include <thread>
 #include <atomic>
-#include <iostream>
 #include <future>
 #include <functional>
 #include "StopWatch.h"
@@ -26,7 +25,6 @@ public:
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
          if (mSleepFunction == nullptr) {
-            std::cout << "Sleep function is nullptr" << std::endl;
             mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
          }
          mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread,this);
@@ -72,14 +70,11 @@ protected:
    }
 
    void SleepForFullAmount() {
-      std::cout << "Sleeping for full amount" << std::endl;
       mSleepFunction(kSleepTimeUsCount);
-      std::cout << "Done sleeping" << std::endl;
       mExpired.store(true);
    }
 
    void SleepUs(unsigned int t) {
-      std::cout << "We sleepin..." << std::endl;
       std::this_thread::sleep_for(microseconds(t));
    }
    
@@ -145,5 +140,3 @@ private:
    const unsigned int kSmallestIntervalInMS = 500;
    const unsigned int kSmallestIntervalInUS = 500 * 1000; // 500ms
 };
-
-

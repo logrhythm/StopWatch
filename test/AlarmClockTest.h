@@ -13,11 +13,11 @@ public:
 
    AlarmClockTest() {};
 
-   static unsigned int kFakeSleepUs;
+   static unsigned int mFakeSleepUs;
 
 protected:
 
-   virtual void SetUp() { AlarmClockTest::kFakeSleepUs = 0; };
+   virtual void SetUp() { AlarmClockTest::mFakeSleepUs = 0; };
 
-   virtual void TearDown() { AlarmClockTest::kFakeSleepUs = 0; };
+   virtual void TearDown() { AlarmClockTest::mFakeSleepUs = 0; };
 };

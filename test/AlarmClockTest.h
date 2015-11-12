@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include "AlarmClock.h"
 #include "gtest/gtest.h"
 
 class AlarmClockTest : public ::testing::Test {
@@ -12,9 +13,11 @@ public:
 
    AlarmClockTest() {};
 
+   static unsigned int kFakeSleepUs;
+
 protected:
 
-   virtual void SetUp() {};
+   virtual void SetUp() { AlarmClockTest::kFakeSleepUs = 0; };
 
-   virtual void TearDown() {};
+   virtual void TearDown() { AlarmClockTest::kFakeSleepUs = 0; };
 };

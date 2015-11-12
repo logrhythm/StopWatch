@@ -9,7 +9,7 @@
 #include "StopWatch.h"
 #include <chrono>
 
-unsigned int AlarmClockTest::mFakeSleepUs = 0;
+std::atomic<unsigned int> AlarmClockTest::mFakeSleepUs(0);
 
 namespace {
    typedef std::chrono::microseconds microseconds;
@@ -34,7 +34,7 @@ namespace {
    }
 
    void FakeSleep(unsigned int usToSleep) {
-      AlarmClockTest::mFakeSleepUs = usToSleep; 
+      AlarmClockTest::mFakeSleepUs.store(usToSleep); 
    }
 }
 

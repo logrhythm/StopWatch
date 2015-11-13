@@ -5,6 +5,8 @@
  */
 
 #pragma once
+#include "AlarmClock.h"
+#include <atomic>
 #include "gtest/gtest.h"
 
 class AlarmClockTest : public ::testing::Test {
@@ -12,9 +14,11 @@ public:
 
    AlarmClockTest() {};
 
+   static std::atomic<unsigned int> mFakeSleepUs;
+
 protected:
 
-   virtual void SetUp() {};
+   virtual void SetUp() { AlarmClockTest::mFakeSleepUs = 0; };
 
-   virtual void TearDown() {};
+   virtual void TearDown() { AlarmClockTest::mFakeSleepUs = 0; };
 };

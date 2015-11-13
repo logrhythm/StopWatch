@@ -9,6 +9,7 @@
 #include <thread>
 #include <atomic>
 #include <future>
+#include <functional>
 #include "StopWatch.h"
 
 
@@ -18,13 +19,15 @@ public:
    typedef std::chrono::milliseconds milliseconds;
    typedef std::chrono::seconds seconds;
    
-   AlarmClock(unsigned int sleepDuration) : mExpired(false),
+   AlarmClock(unsigned int sleepDuration, std::function<void(unsigned int)> funcPtr = nullptr) : mExpired(false),
       kSleepTime(sleepDuration),
-      kSleepTimeMs(ConvertToMilliseconds(Duration(kSleepTime))),
-      kSleepTimeUs(ConvertToMicroseconds(Duration(kSleepTime))),
-      mExited(std::async(std::launch::async,
-                         &AlarmClock::AlarmClockThread,
-                         this)) {
+      kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
+      kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
+      mSleepFunction(funcPtr) {
+         if (mSleepFunction == nullptr) {
+            mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
+         }
+         mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread,this);
    }
    
    virtual ~AlarmClock() {
@@ -44,11 +47,11 @@ public:
    }
 
    int SleepTimeUs() {
-      return kSleepTimeUs;
+      return kSleepTimeUsCount;
    }
    
    int SleepTimeMs() {
-      return kSleepTimeMs;
+      return kSleepTimeMsCount;
    }
 
 protected:
@@ -63,30 +66,18 @@ protected:
    }
 
    bool SleepTimeIsBelow500ms() {
-      return Duration(kSleepTime) <= milliseconds(kSmallestIntervalInMS);
+      return Duration(kSleepTime) <= microseconds(kSmallestIntervalInUS);
    }
 
    void SleepForFullAmount() {
-      Sleep(kSleepTime);
+      mSleepFunction(kSleepTimeUsCount);
       mExpired.store(true);
    }
 
-   void Sleep(unsigned int sleepTime) {
-      std::this_thread::sleep_for(Duration(sleepTime)); 
-   }
-
-   void Sleep(microseconds t) {
-      std::this_thread::sleep_for(t);
-   }
-
-   void Sleep(milliseconds t) {
-      std::this_thread::sleep_for(t); 
+   void SleepUs(unsigned int t) {
+      std::this_thread::sleep_for(microseconds(t));
    }
    
-   void Sleep(seconds t) {
-      std::this_thread::sleep_for(t); 
-   }
-
    // If 500ms is NOT an even divisor of the amount of sleep
    //    time given, should sleep for every multiple of 500ms
    //    that divides, then check the remaining time and just
@@ -97,14 +88,14 @@ protected:
    //    by the while loop, so if the full amount of time is slept,
    //    the precision of the alarm clock will suffer.
    size_t GetNumberOfSleepIntervals() {
-      return (kSleepTimeMs % kSmallestIntervalInMS == 0) ?
-             ((kSleepTimeMs/kSmallestIntervalInMS) - 1) :
-             (kSleepTimeMs/kSmallestIntervalInMS);
+      return (kSleepTimeMsCount % kSmallestIntervalInMS == 0) ?
+             ((kSleepTimeMsCount/kSmallestIntervalInMS) - 1) :
+             (kSleepTimeMsCount/kSmallestIntervalInMS);
    }
   
    void SleepForRemainder(const unsigned int& currentSleptFor) {
-      if (currentSleptFor < kSleepTimeUs) {
-         Sleep(microseconds(kSleepTimeUs - currentSleptFor));
+      if (currentSleptFor < kSleepTimeUsCount) {
+         mSleepFunction(kSleepTimeUsCount - currentSleptFor);
       }
    } 
 
@@ -112,7 +103,7 @@ protected:
       StopWatch timer;
       size_t numberOfSleeps = GetNumberOfSleepIntervals();
       while (KeepRunning() && numberOfSleeps > 0) {
-         Sleep(milliseconds(kSmallestIntervalInMS));
+         mSleepFunction(kSmallestIntervalInUS);
          --numberOfSleeps; 
       }
       auto currentSleptFor = timer.ElapsedUs();
@@ -126,22 +117,26 @@ protected:
       return !mExpired.load();
    }
    
-   unsigned int ConvertToMilliseconds(Duration t) {
+   unsigned int ConvertToMillisecondsCount(Duration t) {
       return std::chrono::duration_cast<milliseconds>(t).count();
    }
    
-   unsigned int ConvertToMicroseconds(Duration t) {
+   unsigned int ConvertToMicrosecondsCount(Duration t) {
       return std::chrono::duration_cast<microseconds>(t).count();
+   }
+   
+   microseconds ConvertToMicroseconds(Duration t) {
+      return std::chrono::duration_cast<microseconds>(t);
    }
    
 private:
 
    std::atomic<bool> mExpired;
    const int kSleepTime;
-   const int kSleepTimeMs;
-   const int kSleepTimeUs;
+   const unsigned int kSleepTimeMsCount;
+   const unsigned int kSleepTimeUsCount;
+   std::function<void(unsigned int)> mSleepFunction;
    std::future<void> mExited;
-   const int kSmallestIntervalInMS = 500;
+   const unsigned int kSmallestIntervalInMS = 500;
+   const unsigned int kSmallestIntervalInUS = 500 * 1000; // 500ms
 };
-
-

@@ -69,9 +69,7 @@ TEST_F(AlarmClockTest, GetMsSleepTimeInUs) {
 
 TEST_F(AlarmClockTest, GetSecSleepTimeInUs) {
    int sec = 1;
-   std::cout << "Creating Alarm clock" << std::endl;
    AlarmClock<seconds> alerter(sec);
-   std::cout << "Checking assertion" << std::endl;
    EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), alerter.SleepTimeUs());
 }
 

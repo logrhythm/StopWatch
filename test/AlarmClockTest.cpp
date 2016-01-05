@@ -200,8 +200,6 @@ TEST_F(AlarmClockTest, milliseconds_MultipleResets) {
    // Reset again after it has expired
    alerter.Reset();
    EXPECT_FALSE(alerter.Expired());
-   // Reset before it is expired
-   alerter.Reset();
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
 }

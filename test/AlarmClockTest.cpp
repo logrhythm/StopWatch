@@ -8,6 +8,7 @@
 #include "AlarmClock.h"
 #include "StopWatch.h"
 #include <chrono>
+#include <iostream>
 
 std::atomic<unsigned int> AlarmClockTest::mFakeSleepUs(0);
 
@@ -33,8 +34,9 @@ namespace {
       return std::chrono::duration_cast<milliseconds>(t).count();
    }
 
-   void FakeSleep(unsigned int usToSleep) {
+   unsigned int FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep); 
+      return -1; // Signals that this is a fake sleep and that it should not continue looping. 
    }
 }
 
@@ -64,7 +66,9 @@ TEST_F(AlarmClockTest, GetMsSleepTimeInUs) {
 
 TEST_F(AlarmClockTest, GetSecSleepTimeInUs) {
    int sec = 1;
+   std::cout << "Creating Alarm clock" << std::endl;
    AlarmClock<seconds> alerter(sec);
+   std::cout << "Checking assertion" << std::endl;
    EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), alerter.SleepTimeUs());
 }
 

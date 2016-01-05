@@ -1,16 +1,17 @@
 /* 
  * File:   AlarmClock.h
- * Author: Craig Cogdill
- * Created: October 15, 2015 10:45am
+ * Author: Amanda Carbonari
+ * Created: January 5, 2016 4:35pm
  */
 
 #pragma once
 #include <chrono>
-#include <thread>
+#include <boost/thread.hpp>
+//#include <thread>
 #include <atomic>
-#include <future>
+//#include <future>
 #include <functional>
-#include "StopWatch.h"
+//#include "StopWatch.h"
 
 
 template<typename Duration> class AlarmClock {
@@ -19,18 +20,25 @@ public:
    typedef std::chrono::milliseconds milliseconds;
    typedef std::chrono::seconds seconds;
    
-   AlarmClock(unsigned int sleepDuration, std::function<void(unsigned int)> funcPtr = nullptr) : mExpired(false),
+   AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+      mExit(false),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
+         std::cout << "Creating sleep function" << std::endl;
          if (mSleepFunction == nullptr) {
+            std::cout << "Null sleep function, using default" << std::endl;
             mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
          }
-         mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread,this);
+         std::cout << "Creating thread" << std::endl;
+         mTimerThread = boost::thread(boost::bind(&AlarmClock::AlarmClockInterruptableThread, this));
+         std::cout << "Finished constructing" << std::endl;
    }
-   
+
    virtual ~AlarmClock() {
+      mExit.store(true);
+      mCondition.notify_all();
       StopBackgroundThread();
    }
    
@@ -39,11 +47,24 @@ public:
    }
 
    void Reset() {
+      std::cout << "RESET " << boost::this_thread::get_id() << ": creating lock" << std::endl;
+      boost::unique_lock<boost::mutex> lck(mMutex);
+
       if (!mExpired.load()) {
+         std::cout << "RESET " << boost::this_thread::get_id() << ": stopping background thread" << std::endl;
          StopBackgroundThread();
       }
-      mExpired.store(false); 
-      mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
+      //mTimerThread -> mSleepFunction();
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Setting expired to 0" << std::endl;
+      mExpired.store(0);
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Notifying all" << std::endl;
+      mCondition.notify_all();
+
+      //while (mExpired == 0 || !mExit) { 
+      //   std::cout << "RESET " << boost::this_thread::get_id() << ": Waiting for lock" << std::endl;
+      //   mCondition.wait(lck); 
+      //}
+      std::cout << "RESET " << boost::this_thread::get_id() << ": all done" << std::endl;
    }
 
    int SleepTimeUs() {
@@ -56,65 +77,61 @@ public:
 
 protected:
 
-   void AlarmClockThread() {
-      SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
+   void AlarmClockInterruptableThread() {
+      boost::unique_lock<boost::mutex> lck(mMutex);
+      std::cout << "THREAD " << boost::this_thread::get_id() << ": Starting while loop" << std::endl;
+      do {
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": releasing lock" << std::endl;
+         mCondition.notify_all();
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": Calling sleep function" << std::endl;
+         int retVal = mSleepFunction(kSleepTimeUsCount);
+         // If this was a normal exit then set expired to true. 
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": Checking return value" << std::endl;
+         if (retVal == 0) {
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Time expired" << std::endl;
+            mExpired++;
+         } else if (mExit){
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted and should exit" << std::endl;
+            break;
+         } else if (retVal == -1) {
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Fake Sleep detected" << std::endl;
+            mExpired++;
+         }
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": end of loop, waiting on lock" << std::endl;
+         while(mExpired > 0) { 
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Waiting for lock" << std::endl;
+            try {
+               mCondition.wait(lck); 
+            } catch (boost::thread_interrupted e) {
+               std::cout << "THREAD " << boost::this_thread::get_id() << ": wait got interrupted" << std::endl;
+               break;
+            }
+         }
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": got lock! Starting loop again" << std::endl;
+      } while (!mExit);
+      std::cout << "THREAD " << boost::this_thread::get_id() << ": exiting while loop" << std::endl;
    }
   
    void StopBackgroundThread() {
-      mExpired.store(true);
-      mExited.wait();
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": interrupting thread" << std::endl;
+      mTimerThread.interrupt();
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": checking if joinable" << std::endl;
+      if (mTimerThread.joinable() && mExit) {
+         std::cout << "STOPPER " << boost::this_thread::get_id() << ": joining thread" << std::endl;
+         mTimerThread.join();
+      }   
    }
 
-   bool SleepTimeIsBelow500ms() {
-      return Duration(kSleepTime) <= microseconds(kSmallestIntervalInUS);
-   }
-
-   void SleepForFullAmount() {
-      mSleepFunction(kSleepTimeUsCount);
-      mExpired.store(true);
-   }
-
-   void SleepUs(unsigned int t) {
-      std::this_thread::sleep_for(microseconds(t));
-   }
-   
-   // If 500ms is NOT an even divisor of the amount of sleep
-   //    time given, should sleep for every multiple of 500ms
-   //    that divides, then check the remaining time and just
-   //    sleep for only that last bit.
-   //
-   // If 500ms IS an even divisor of the sleep time, sleep for 
-   //    all but one multiple of 500ms. There is overhead induced
-   //    by the while loop, so if the full amount of time is slept,
-   //    the precision of the alarm clock will suffer.
-   size_t GetNumberOfSleepIntervals() {
-      return (kSleepTimeMsCount % kSmallestIntervalInMS == 0) ?
-             ((kSleepTimeMsCount/kSmallestIntervalInMS) - 1) :
-             (kSleepTimeMsCount/kSmallestIntervalInMS);
-   }
-  
-   void SleepForRemainder(const unsigned int& currentSleptFor) {
-      if (currentSleptFor < kSleepTimeUsCount) {
-         mSleepFunction(kSleepTimeUsCount - currentSleptFor);
+   unsigned int SleepUs(unsigned int t) {
+      try {
+         std::cout << "SLEEP FUNCTION " << boost::this_thread::get_id() << ": calling boost sleep" << std::endl;
+         boost::this_thread::sleep_for(boost::chrono::microseconds(t));
+         std::cout << "SLEEP FUNCTION " << boost::this_thread::get_id() << ": sleep ended" << std::endl;
+         return 0;
+      } catch (boost::thread_interrupted e) {
+         std::cout << "SLEEP FUNCTION " << boost::this_thread::get_id() << ": interrupted" << std::endl;
+         return 1;
       }
-   } 
-
-   void SleepInIntervals() {
-      StopWatch timer;
-      size_t numberOfSleeps = GetNumberOfSleepIntervals();
-      while (KeepRunning() && numberOfSleeps > 0) {
-         mSleepFunction(kSmallestIntervalInUS);
-         --numberOfSleeps; 
-      }
-      auto currentSleptFor = timer.ElapsedUs();
-      if (KeepRunning()) {
-         SleepForRemainder(currentSleptFor);
-      }
-      mExpired.store(true);
-   }
-
-   bool KeepRunning() {
-      return !mExpired.load();
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
@@ -126,17 +143,19 @@ protected:
    }
    
    microseconds ConvertToMicroseconds(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t);
+      return boost::chrono::duration_cast<microseconds>(t);
    }
    
 private:
 
-   std::atomic<bool> mExpired;
+   std::atomic<unsigned int> mExpired;
+   std::atomic<bool> mExit;
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;
-   std::function<void(unsigned int)> mSleepFunction;
-   std::future<void> mExited;
-   const unsigned int kSmallestIntervalInMS = 500;
-   const unsigned int kSmallestIntervalInUS = 500 * 1000; // 500ms
+   std::function<unsigned int (unsigned int)> mSleepFunction;
+   boost::thread mTimerThread;
+   boost::mutex mMutex;
+   boost::unique_lock<boost::mutex> mLock;
+   boost::condition_variable mCondition;
 };

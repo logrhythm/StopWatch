@@ -2,6 +2,8 @@
  * File:   AlarmClockTest.cpp
  * Author: Craig Cogdill
  * Created: October 15, 2015 10:45am
+ * Modifier: Amanda Carbonari
+ * Modified Date: January 5, 2015 3:45pm
  */
 
 #include "AlarmClockTest.h"
@@ -36,7 +38,8 @@ namespace {
 
    unsigned int FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep); 
-      return -1; // Signals that this is a fake sleep and that it should not continue looping. 
+      return 0; // Required to make sure the Alarm clock does not continuously loop.
+                // Just signifies that the sleep was completed/expired not interrupted. 
    }
 }
 
@@ -161,7 +164,6 @@ TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    // First run
    int ms = 750;
-   StopWatch testTimer;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
    EXPECT_FALSE(alerter.Expired());
    WaitForAlarmClockToExpire(alerter);
@@ -178,6 +180,29 @@ TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
    int ms = 7500;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
    EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+}
+
+TEST_F(AlarmClockTest, milliseconds_MultipleResets) {
+   // First run
+   int ms = 750;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+   
+   // Reset after AlarmClock has expired
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+
+   // Reset again after it has expired
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   // Reset before it is expired
    alerter.Reset();
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());

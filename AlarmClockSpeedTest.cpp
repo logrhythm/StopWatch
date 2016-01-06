@@ -11,6 +11,7 @@
 #include <AlarmClock.h>
 #include <chrono>
 using namespace std;
+using namespace std::chrono;
 typedef std::chrono::microseconds microseconds;
 typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::seconds seconds;
@@ -21,8 +22,6 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 }
 
 int main(int, const char**) {
-   clock_t start;
-   clock_t end;
    unsigned int us = 389;
 
    cout << "Creating Alarm Clock" << endl;
@@ -30,10 +29,10 @@ int main(int, const char**) {
    // Give some time for the countdown to start
    this_thread::sleep_for(chrono::microseconds(20));
    cout << "Starting clock and resetting" << endl;
-   start = clock();
+   high_resolution_clock::time_point start = high_resolution_clock::now();
    alerter.Reset();
-   end = clock();
-   clock_t reset_time = (end - start) / (double) (CLOCKS_PER_SEC);
+   high_resolution_clock::time_point end = high_resolution_clock::now();
+   auto reset_time = duration_cast<microseconds>(end - start).count();
    cout << "Start: " << start << ", End: " << end << endl;
    cout << "Waiting for the clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);

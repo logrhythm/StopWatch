@@ -21,6 +21,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 
 int main(int, const char**) {
  	clock_t start;
+ 	unsigned int ms = 389;
 
  	AlarmClock<milliseconds> alerter(ms);
 

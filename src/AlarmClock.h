@@ -4,7 +4,6 @@
  * Created: January 5, 2016 4:35pm
  * Description: Utilizes the boost library to create a singleton interruptable thread
  *   that "communicates" with the main thread via a mutex, locks and condition variables.
- * TODO: Must add test to see if the mutex is reentrant (multiple resets)
  */
 
 #pragma once
@@ -62,24 +61,7 @@ public:
 protected:
 
    void AlarmClockInterruptableThread() {
-      boost::unique_lock<boost::mutex> lck(mMutex);
-      do {
-         mCondition.notify_all();
-         int retVal = mSleepFunction(kSleepTimeUsCount);
-         // If this was a normal exit then set expired to true, otherwise check
-         // to see if it is an interrupt to exit the thread. 
-         if (retVal == 0) {
-            mExpired++;
-         } else if (mExit){
-            break;
-         }
-         
-         try {
-            mCondition.wait(lck); 
-         } catch (boost::thread_interrupted e) {
-            break;
-         }
-      } while (!mExit);
+      mSleepFunction(kSleepTimeUsCount);
    }
   
    void StopBackgroundThread() {
@@ -91,13 +73,27 @@ protected:
       }   
    }
 
-   unsigned int SleepUs(unsigned int t) {
-      try {
-         boost::this_thread::sleep_for(boost::chrono::microseconds(t));
-         return 0;
-      } catch (boost::thread_interrupted e) {
-         return 1;
-      }
+   void SleepUs(unsigned int t) {
+      boost::unique_lock<boost::mutex> lck(mMutex);
+      do {
+         try {
+            boost::this_thread::sleep_for(boost::chrono::microseconds(t));
+            mExpired++;
+         } catch (boost::thread_interrupted e) {
+            if (mExit) {
+               break;
+            }
+         }
+
+         // Wait condition must be in separate interrupt try catch to ensure
+         // that if the sleep is interrupted, the thread still waits for the 
+         // signal to either exit or continue.
+         try {
+            mCondition.wait(lck); 
+         } catch (boost::thread_interrupted e) {
+            break;
+         }
+      } while (!mExit);
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
@@ -119,7 +115,7 @@ private:
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;
-   std::function<unsigned int (unsigned int)> mSleepFunction;
+   std::function<void (unsigned int)> mSleepFunction;
    boost::thread mTimerThread;
    boost::mutex mMutex;
    boost::condition_variable mCondition;

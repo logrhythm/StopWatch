@@ -180,7 +180,7 @@ protected:
          auto sleep_time = std::chrono::duration_cast<microseconds>(t2-t1).count();
          if (true) {
             std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Time slept = " << sleep_time << std::endl;
-            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0" << std::endl;
+            //std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0" << std::endl;
          }
          return 0;
       } catch (boost::thread_interrupted e) {

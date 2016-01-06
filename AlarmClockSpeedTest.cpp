@@ -22,16 +22,11 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
    while(!alerter.Expired());
 }
 
-int main(int, const char**) {
-   unsigned int us = 1000;
-   unsigned int ms = 3;
+void testReset(unsigned int sleep_time, typename T) {
 
    cout << "Creating Alarm Clock" << endl;
    //AlarmClock<microseconds> alerter(us);
-   AlarmClock<milliseconds> alerter(ms);
-   cout << "Sleeping to allow countdown to start" << endl;
-   // Give some time for the countdown to start
-   this_thread::sleep_for(microseconds(50));
+   AlarmClock<T> alerter(sleep_time);
    cout << "Starting clock and resetting" << endl;
    high_resolution_clock::time_point start = high_resolution_clock::now();
    alerter.Reset();
@@ -41,4 +36,18 @@ int main(int, const char**) {
    WaitForAlarmClockToExpire(alerter);
 
    cout << "Time: " << reset_time << " us" << endl;
+}
+
+int main(int, const char**) {
+   unsigned int us = 1000;
+   unsigned int ms = 3;
+   unsigned int s = 1;
+
+   cout << "Testing microseconds" << endl;
+   testReset(us, microseconds);
+   cout << "Testing milliseconds" << endl;
+   testReset(ms, milliseconds);
+   cout << "Testing seconds" << endl;
+   testReset(s, seconds);
+
 }

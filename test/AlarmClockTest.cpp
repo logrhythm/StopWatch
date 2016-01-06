@@ -168,8 +168,11 @@ TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    
    // Reset after AlarmClock has expired
    alerter.Reset();
+   std::cout << "TESTER: Expecting false" << std::endl;
    EXPECT_FALSE(alerter.Expired());
+   std::cout << "TESTER: Waiting for expiration" << std::endl;
    WaitForAlarmClockToExpire(alerter);
+   std::cout << "TESTER: Expecting true" << std::endl;
    EXPECT_TRUE(alerter.Expired());
 }
 

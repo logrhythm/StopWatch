@@ -19,7 +19,7 @@ public:
    typedef std::chrono::milliseconds milliseconds;
    typedef std::chrono::seconds seconds;
    
-   AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+   AlarmClock(unsigned int sleepDuration, std::function<void (unsigned int)> funcPtr = nullptr) : mExpired(0),
       mExit(false),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),

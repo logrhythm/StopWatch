@@ -31,9 +31,9 @@ public:
             mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
          }
          std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": creating background thread" << std::endl;
-         mTimerThread = boost::thread(boost::bind(&AlarmClock::AlarmClockInterruptableThread, this));
+         mTimerThread = boost::thread(&AlarmClock::AlarmClockInterruptableThread, this);
          std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": detaching thread" << std::endl;
-         mTimerThread.detach();
+         // mTimerThread.detach();
          std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": finished!" << std::endl;
    }
 
@@ -108,12 +108,12 @@ protected:
       mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
-      // std::cout << "STOPPER " << boost::this_thread::get_id() << ": Checking to see if the threads should be joined" << std::endl;
-      // if (mTimerThread.joinable() && mExit) {
-      //    std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
-      //    mTimerThread.join();
-      // }   
-      // std::cout << "STOPPER " << boost::this_thread::get_id() << ": Exiting" << std::endl;
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Checking to see if the threads should be joined" << std::endl;
+      if (mTimerThread.joinable() && mExit) {
+         std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
+         mTimerThread.join();
+      }   
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Exiting" << std::endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

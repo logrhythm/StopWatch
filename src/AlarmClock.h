@@ -141,6 +141,7 @@ protected:
                }
             }
          }
+         mReset.store(false);
       } while (!mExit);
       if (print) {
          std::cout << "THREAD " << boost::this_thread::get_id() << ": Out of loop! Exiting" << std::endl;

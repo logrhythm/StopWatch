@@ -21,6 +21,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 
 int main(int, const char**) {
  	clock_t start;
+ 	clock_t end;
  	unsigned int us = 389;
 
  	cout << "Creating Alarm Clock" << endl;
@@ -30,8 +31,9 @@ int main(int, const char**) {
  	cout << "Starting clock and resetting" << endl;
  	start = clock();
  	alerter.Reset();
+ 	end = clock();
  	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC);
-
+ 	cout << "Start: " << start << ", End: " << end << endl;
  	cout << "Waiting for the clock to expire" << endl;
  	WaitForAlarmClockToExpire(alerter);
 

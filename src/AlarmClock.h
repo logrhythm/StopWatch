@@ -32,6 +32,8 @@ public:
          }
          std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": creating background thread" << std::endl;
          mTimerThread = boost::thread(boost::bind(&AlarmClock::AlarmClockInterruptableThread, this));
+         std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": detaching thread" << std::endl;
+         mTimerThread.detach();
          std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": finished!" << std::endl;
    }
 

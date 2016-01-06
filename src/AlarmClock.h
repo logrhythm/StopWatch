@@ -32,8 +32,11 @@ public:
    }
 
    virtual ~AlarmClock() {
+      std::cout << "DESTRUCTOR " << boost::this_thread::get_id() << ": Setting mExit to TRUE" << std::endl;
       mExit.store(true);
+      std::cout << "DESTRUCTOR " << boost::this_thread::get_id() << ": Calling stop background thread" << std::endl;
       StopBackgroundThread();
+      std::cout << "DESTRUCTOR " << boost::this_thread::get_id() << ": Finished!" << std::endl;
    }
    
    bool Expired() {
@@ -44,7 +47,7 @@ public:
       boost::unique_lock<boost::mutex> lck(mMutex);
 
       if (!mExpired.load()) {
-         std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping backgound thread" << std::endl;
+         std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping background thread" << std::endl;
          StopBackgroundThread();
       }
       std::cout << "RESET " << boost::this_thread::get_id() << ": Setting mExpired to 0" << std::endl;

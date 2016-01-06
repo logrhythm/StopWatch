@@ -6,6 +6,7 @@
  * WARNING: This only measures CPU time
  */
 
+#include <AlarmClockSpeedTest.h>
 #include <ctime>
 #include <iostream>
 #include <AlarmClock.h>
@@ -26,9 +27,9 @@ int main(int, const char**) {
 
  	start = clock();
  	alerter.Reset()
- 	clock_t duration = (clock() - start) / (double) (CLOCKS_PER_SEC/1000)
+ 	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC/1000)
 
  	WaitForAlarmClockToExpire(alerter);
 
- 	cout << "Time: " << duration << " ms" << endl;
+ 	cout << "Time: " << reset_time << " ms" << endl;
 }

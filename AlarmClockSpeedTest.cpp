@@ -25,14 +25,15 @@ int main(int, const char**) {
 
  	cout << "Creating Alarm Clock" << endl;
  	AlarmClock<microseconds> alerter(us);
+ 	// Give some time for the countdown to start
  	boost::this_thread::sleep_for(boost::chrono::microseconds(20));
  	cout << "Starting clock and resetting" << endl;
  	start = clock();
  	alerter.Reset();
- 	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC/1000);
+ 	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC);
 
  	cout << "Waiting for the clock to expire" << endl;
  	WaitForAlarmClockToExpire(alerter);
 
- 	cout << "Time: " << reset_time << " ms" << endl;
+ 	cout << "Time: " << reset_time << " us" << endl;
 }

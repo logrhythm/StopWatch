@@ -50,6 +50,8 @@ public:
    }
 
    void Reset() {
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
+      boost::unique_lock<boost::mutex> lck(mMutex);
       if (!mExpired.load()) {
          std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping background thread" << std::endl;
          StopBackgroundThread();

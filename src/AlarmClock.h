@@ -50,8 +50,6 @@ public:
    }
 
    void Reset() {
-      boost::unique_lock<boost::mutex> lck(mMutex);
-
       if (!mExpired.load()) {
          std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping background thread" << std::endl;
          StopBackgroundThread();
@@ -110,12 +108,12 @@ protected:
       mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
-      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Checking to see if the threads should be joined" << std::endl;
-      if (mTimerThread.joinable() && mExit) {
-         std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
-         mTimerThread.join();
-      }   
-      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Exiting" << std::endl;
+      // std::cout << "STOPPER " << boost::this_thread::get_id() << ": Checking to see if the threads should be joined" << std::endl;
+      // if (mTimerThread.joinable() && mExit) {
+      //    std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
+      //    mTimerThread.join();
+      // }   
+      // std::cout << "STOPPER " << boost::this_thread::get_id() << ": Exiting" << std::endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

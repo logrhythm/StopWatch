@@ -22,7 +22,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
    while(!alerter.Expired());
 }
 
-void testReset(unsigned int sleep_time, typename T) {
+template <typename T> void testReset(unsigned int sleep_time) {
 
    cout << "Creating Alarm Clock" << endl;
    //AlarmClock<microseconds> alerter(us);

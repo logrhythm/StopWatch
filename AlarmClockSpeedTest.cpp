@@ -24,9 +24,11 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 
 int main(int, const char**) {
    unsigned int us = 1000;
+   unsigned int ms = 3;
 
    cout << "Creating Alarm Clock" << endl;
-   AlarmClock<microseconds> alerter(us);
+   //AlarmClock<microseconds> alerter(us);
+   AlarmClock<milliseconds> alerter(ms);
    cout << "Sleeping to allow countdown to start" << endl;
    // Give some time for the countdown to start
    this_thread::sleep_for(microseconds(50));

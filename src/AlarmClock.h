@@ -22,6 +22,7 @@ public:
    
    AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
       mExit(false),
+      mReset(false),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
@@ -67,6 +68,7 @@ public:
          std::cout << "RESET " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
       }
       boost::unique_lock<boost::mutex> lck(mMutex);
+      mReset.store(true);
       if (!mExpired.load()) {
          if (print) {
             std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping background thread" << std::endl;
@@ -127,17 +129,16 @@ protected:
             break;
          }
 
-         // Wait condition must be in separate interrupt try catch to ensure
-         // that if the sleep is interrupted, the thread still waits for the 
-         // signal to either exit or continue.
-         try {
-            if (print) {
-               std::cout << "THREAD " << boost::this_thread::get_id() << ": Waiting on lock" << std::endl;
-            }
-            mCondition.wait(lck); 
-         } catch (boost::thread_interrupted e) {
-            if (print) {
-               std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted while waiting on lock, reentering loop." << std::endl;
+         if (!mReset) {
+            try {
+               if (print) {
+                  std::cout << "THREAD " << boost::this_thread::get_id() << ": Waiting on lock" << std::endl;
+               }
+               mCondition.wait(lck); 
+            } catch (boost::thread_interrupted e) {
+               if (print) {
+                  std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted while waiting on lock, reentering loop." << std::endl;
+               }
             }
          }
       } while (!mExit);

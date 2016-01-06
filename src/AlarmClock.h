@@ -25,10 +25,15 @@ public:
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
+         std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": checking sleep function" << std::endl;
          if (mSleepFunction == nullptr) {
+            std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": setting sleep function to default" << std::endl;
             mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
          }
+         std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": creating background thread" << std::endl;
          mTimerThread = boost::thread(boost::bind(&AlarmClock::AlarmClockInterruptableThread, this));
+
+         std::cout << "CONSTRUCTOR " << boost::this_thread::get_id() << ": finished!" << std::endl;
    }
 
    virtual ~AlarmClock() {
@@ -74,12 +79,13 @@ protected:
       do {
          std::cout << "THREAD " << boost::this_thread::get_id() << ": Calling sleep function" << std::endl;
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
-         std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished, incrementing expired and exiting" << std::endl;
+         std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished" << std::endl;
 
          if (retVal == 0) {
-            std::cout << "THREAD " << boost::this_thread::get_id() << ": Time expired!" << std::endl;
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Time expired! " << std::endl;
             // Expired, should increment mExpired
             mExpired++;
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": mExpired = " << mExpired << std::endl; 
          } else if (mExit) {
             std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted! Exit is true!" << std::endl;
             break;

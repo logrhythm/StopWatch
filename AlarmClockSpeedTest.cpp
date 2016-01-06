@@ -10,6 +10,7 @@
 #include <iostream>
 #include <AlarmClock.h>
 #include <chrono>
+#include <thread>
 using namespace std;
 using namespace std::chrono;
 typedef std::chrono::microseconds microseconds;
@@ -27,7 +28,7 @@ int main(int, const char**) {
    cout << "Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us);
    // Give some time for the countdown to start
-   std::this_thread::sleep_for(chrono::microseconds(20));
+   this_thread::sleep_for(microseconds(20));
    cout << "Starting clock and resetting" << endl;
    high_resolution_clock::time_point start = high_resolution_clock::now();
    alerter.Reset();

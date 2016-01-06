@@ -25,8 +25,8 @@ int main(int, const char**) {
  	AlarmClock<milliseconds> alerter(ms);
 
  	start = clock();
- 	alerter.Reset()
- 	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC/1000)
+ 	alerter.Reset();
+ 	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC/1000);
 
  	WaitForAlarmClockToExpire(alerter);
 

@@ -124,11 +124,12 @@ protected:
             break;
          }
 
+         if (print) {
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
+         }
+         boost::unique_lock<boost::mutex> lck(mMutex);
+
          if (!mReset) {
-            if (print) {
-               std::cout << "THREAD " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
-            }
-            boost::unique_lock<boost::mutex> lck(mMutex);
             try {
                if (print) {
                   std::cout << "THREAD " << boost::this_thread::get_id() << ": Waiting on lock" << std::endl;

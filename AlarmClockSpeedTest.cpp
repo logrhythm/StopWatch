@@ -44,10 +44,10 @@ int main(int, const char**) {
    unsigned int s = 1;
 
    cout << "Testing microseconds" << endl;
-   testReset(us, microseconds);
+   testReset<microseconds>(us);
    cout << "Testing milliseconds" << endl;
-   testReset(ms, milliseconds);
+   testReset<milliseconds>(ms);
    cout << "Testing seconds" << endl;
-   testReset(s, seconds);
+   testReset<seconds>(s);
 
 }

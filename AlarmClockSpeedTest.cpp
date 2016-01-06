@@ -9,6 +9,7 @@
 #include <ctime>
 #include <iostream>
 #include <AlarmClock.h>
+#include <chrono>
 using namespace std;
 typedef std::chrono::microseconds microseconds;
 typedef std::chrono::milliseconds milliseconds;
@@ -27,7 +28,7 @@ int main(int, const char**) {
    cout << "Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us);
    // Give some time for the countdown to start
-   boost::this_thread::sleep_for(boost::chrono::microseconds(20));
+   this_thread::sleep_for(chrono::microseconds(20));
    cout << "Starting clock and resetting" << endl;
    start = clock();
    alerter.Reset();

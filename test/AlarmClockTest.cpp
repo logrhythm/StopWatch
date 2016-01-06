@@ -181,7 +181,7 @@ TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
    EXPECT_TRUE(alerter.Expired());
 }
 
-TEST_F(AlarmClockTest, milliseconds_MultipleResets) {
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsAfterExpired) {
    // First run
    int ms = 750;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
@@ -196,6 +196,37 @@ TEST_F(AlarmClockTest, milliseconds_MultipleResets) {
    EXPECT_TRUE(alerter.Expired());
 
    // Reset again after it has expired
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+}
+
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsBeforeExpired) {
+   int ms = 7500;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+}
+
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsMixed) {
+   int ms = 750;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
    alerter.Reset();
    EXPECT_FALSE(alerter.Expired());
    WaitForAlarmClockToExpire(alerter);

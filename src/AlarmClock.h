@@ -73,7 +73,7 @@ protected:
 
       do {
          std::cout << "THREAD " << boost::this_thread::get_id() << ": Calling sleep function" << std::endl;
-         retVal = mSleepFunction(kSleepTimeUsCount);
+         unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
          std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished, incrementing expired and exiting" << std::endl;
 
          if (retVal == 0) {

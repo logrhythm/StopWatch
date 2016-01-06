@@ -22,7 +22,8 @@ SET(ACTIVE_CPP0xx_DIR "Release")
 
 find_library(TCMALLOC tcmalloc PATHS /usr/local/probe/lib )
 find_library(BOOST_THREAD boost_thread PATHS /usr/local/probe/lib )
-find_library(BOOST_SYSTEM boost_thread PATHS /usr/local/probe/lib )
+find_library(BOOST_SYSTEM boost_system PATHS /usr/local/probe/lib )
+find_library(BOOST_TIMER boost_timer PATHS /usr/local/probe/lib )
 
 #cmake -DCMAKE_CXX_COMPILER=clang++ ..
   # WARNING: If Clang for Linux does not work with full C++11 support it might be your
@@ -105,4 +106,4 @@ IF( NOT(MSVC))
   set_target_properties(${test} PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
 ENDIF( NOT(MSVC))
 add_executable(PerformanceTester AlarmClockSpeedTest.cpp)
-target_link_libraries(PerformanceTester stdc++ boost_thread boost_system tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
+target_link_libraries(PerformanceTester stdc++ boost_timer boost_thread boost_system tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )

@@ -176,10 +176,8 @@ protected:
          boost::this_thread::sleep_for(boost::chrono::microseconds(t));
          std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
          auto sleep_time = std::chrono::duration_cast<microseconds>(t2-t1).count();
-         if (print) {
+         if (true) {
             std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Time slept = " << sleep_time << std::endl;
-         }
-         if (print) {
             std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0" << std::endl;
          }
          return 0;

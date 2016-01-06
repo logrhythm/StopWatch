@@ -123,7 +123,7 @@ protected:
          std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
          boost::this_thread::sleep_for(boost::chrono::microseconds(t));
          std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Time slept = " << std::chrono::duration_cast<microseconds>(t2-t1).count() << endl;
+         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Time slept = " << std::chrono::duration_cast<microseconds>(t2-t1).count() << std::endl;
          std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0" << std::endl;
          return 0;
       } catch (boost::thread_interrupted e) {

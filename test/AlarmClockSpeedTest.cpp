@@ -6,7 +6,6 @@
  * WARNING: This only measures CPU time
  */
 
-#include <AlarmClockSpeedTest.h>
 #include <ctime>
 #include <iostream>
 #include <AlarmClock.h>

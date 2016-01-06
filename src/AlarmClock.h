@@ -54,7 +54,7 @@ public:
       mExpired.store(0);
       std::cout << "RESET " << boost::this_thread::get_id() << ": Notifying all threads" << std::endl;
       mCondition.notify_all();
-      std::cout << "RESET " << boost::this_thread::get_id() << ": Finished!" << std:endl;
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Finished!" << std::endl;
    }
 
    int SleepTimeUs() {

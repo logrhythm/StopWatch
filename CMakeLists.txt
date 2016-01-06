@@ -98,7 +98,7 @@ include_directories(test)
 
   add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
   add_executable(PerformanceTester AlarmClockSpeedTest.cpp)
-  target_link_libraries(UnitTestRunner gtest_170_lib stdc++ boost_thread boost_system tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
+  target_link_libraries(PerformanceTester UnitTestRunner gtest_170_lib stdc++ boost_thread boost_system tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_TR1_TUPLE=0")
   set_target_properties(${test} PROPERTIES COMPILE_DEFINITIONS "GTEST_HAS_RTTI=0")
 IF( NOT(MSVC))

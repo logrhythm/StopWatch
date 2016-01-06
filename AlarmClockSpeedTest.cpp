@@ -24,8 +24,8 @@ int main(int, const char**) {
  	unsigned int us = 389;
 
  	cout << "Creating Alarm Clock" << endl;
- 	boost::thread(AlarmClock<microseconds> alerter(us)).join();
-
+ 	AlarmClock<microseconds> alerter(us);
+ 	boost::this_thread::sleep_for(boost::chrono::microseconds(20));
  	cout << "Starting clock and resetting" << endl;
  	start = clock();
  	alerter.Reset();

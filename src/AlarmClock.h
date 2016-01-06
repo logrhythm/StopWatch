@@ -69,7 +69,8 @@ protected:
    void AlarmClockInterruptableThread() {
       std::cout << "THREAD " << boost::this_thread::get_id() << ": Calling sleep function" << std::endl;
       mSleepFunction(kSleepTimeUsCount);
-      std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished, exiting" << std::endl;
+      std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished, incrementing expired and exiting" << std::endl;
+      mExpired++;
    }
   
    void StopBackgroundThread() {

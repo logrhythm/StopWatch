@@ -36,10 +36,8 @@ namespace {
       return std::chrono::duration_cast<milliseconds>(t).count();
    }
 
-   unsigned int FakeSleep(unsigned int usToSleep) {
+   void FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep); 
-      return 0; // Required to make sure the Alarm clock does not continuously loop.
-                // Just signifies that the sleep was completed/expired not interrupted. 
    }
 }
 

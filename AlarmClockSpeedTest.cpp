@@ -23,7 +23,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 }
 
 int main(int, const char**) {
-   unsigned int us = 389;
+   unsigned int us = 1000;
 
    cout << "Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us);

@@ -44,9 +44,12 @@ public:
       boost::unique_lock<boost::mutex> lck(mMutex);
 
       if (!mExpired.load()) {
+         std::cout << "RESET " << boost::this_thread::get_id() << ": Stopping backgound thread" << std::endl;
          StopBackgroundThread();
       }
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Setting mExpired to 0" << std::endl;
       mExpired.store(0);
+      std::cout << "RESET " << boost::this_thread::get_id() << ": Notifying all threads" << std::endl;
       mCondition.notify_all();
    }
 
@@ -61,26 +64,35 @@ public:
 protected:
 
    void AlarmClockInterruptableThread() {
+      std::cout << "THREAD " << boost::this_thread::get_id() << ": Calling sleep function" << std::endl;
       mSleepFunction(kSleepTimeUsCount);
+      std::cout << "THREAD " << boost::this_thread::get_id() << ": Sleep function finished, exiting" << std::endl;
    }
   
    void StopBackgroundThread() {
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Interrupting thread" << std::endl;
       mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
+         std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
          mTimerThread.join();
       }   
    }
 
    void SleepUs(unsigned int t) {
+      std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
       boost::unique_lock<boost::mutex> lck(mMutex);
       do {
          try {
+            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Initiating sleep" << std::endl;
             boost::this_thread::sleep_for(boost::chrono::microseconds(t));
+            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Incrementing mExpired" << std::endl;
             mExpired++;
          } catch (boost::thread_interrupted e) {
+            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Interrupted! Checking to see if I should exit" << std::endl;
             if (mExit) {
+               std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Breaking" << std::endl;
                break;
             }
          }
@@ -89,11 +101,14 @@ protected:
          // that if the sleep is interrupted, the thread still waits for the 
          // signal to either exit or continue.
          try {
+            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Waiting on lock" << std::endl;
             mCondition.wait(lck); 
          } catch (boost::thread_interrupted e) {
+            std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Interrupted while waiting on lock, breaking." << std::endl;
             break;
          }
       } while (!mExit);
+      std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Exiting!" << std::endl;
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {

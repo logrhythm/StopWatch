@@ -27,8 +27,9 @@ int main(int, const char**) {
 
    cout << "Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us);
+   cout << "Sleeping to allow countdown to start"
    // Give some time for the countdown to start
-   this_thread::sleep_for(microseconds(20));
+   this_thread::sleep_for(microseconds(100));
    cout << "Starting clock and resetting" << endl;
    high_resolution_clock::time_point start = high_resolution_clock::now();
    alerter.Reset();

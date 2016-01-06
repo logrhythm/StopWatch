@@ -210,6 +210,7 @@ private:
 
    std::atomic<unsigned int> mExpired;
    std::atomic<bool> mExit;
+   std::atomic<bool> mReset;
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;

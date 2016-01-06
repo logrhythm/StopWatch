@@ -36,8 +36,9 @@ namespace {
       return std::chrono::duration_cast<milliseconds>(t).count();
    }
 
-   void FakeSleep(unsigned int usToSleep) {
+   unsigned int FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep); 
+      return 0;
    }
 }
 

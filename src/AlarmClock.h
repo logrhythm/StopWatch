@@ -119,9 +119,9 @@ protected:
 
    unsigned int SleepUs(unsigned int t) {
       try {
-         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Initiating sleep, time: " << std::crono::duration_cast<microseconds>(std::crono::high_resolution_clock::now()).count() << std::endl;
+         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Initiating sleep, time: " << std::crono::duration_cast<microseconds>(std::chrono::high_resolution_clock::now()).count() << std::endl;
          boost::this_thread::sleep_for(boost::chrono::microseconds(t));
-         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0, time: " << std::crono::duration_cast<microseconds>(std::crono::high_resolution_clock::now()).count() << std::endl;
+         std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0, time: " << std::crono::duration_cast<microseconds>(std::chrono::high_resolution_clock::now()).count() << std::endl;
          return 0;
       } catch (boost::thread_interrupted e) {
          std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Interrupted! Returning 1" << std::endl;

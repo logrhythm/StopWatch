@@ -23,7 +23,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 }
 
 template <typename T> void testReset(unsigned int sleep_time) {
-
+   high_resolution_clock::time_point start_overall = high_resolution_clock::now();
    cout << "Creating Alarm Clock" << endl;
    //AlarmClock<microseconds> alerter(us);
    AlarmClock<T> alerter(sleep_time);
@@ -34,8 +34,10 @@ template <typename T> void testReset(unsigned int sleep_time) {
    auto reset_time = duration_cast<microseconds>(end - start).count();
    cout << "Waiting for the clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-
-   cout << "Time: " << reset_time << " us" << endl;
+   high_resolution_clock::time_point end_overall = high_resolution_clock::now();
+   auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
+   cout << "Reset Time: " << reset_time << " us" << endl;
+   cout << "Overall Time: " << overall_time << " us" << endl;
 }
 
 int main(int, const char**) {

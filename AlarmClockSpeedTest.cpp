@@ -28,7 +28,7 @@ int main(int, const char**) {
 
  	cout << "Starting clock and resetting" << endl;
  	start = clock();
- 	alerter.Reset();
+ 	//alerter.Reset();
  	clock_t reset_time = (clock() - start) / (double) (CLOCKS_PER_SEC/1000);
 
  	cout << "Waiting for the clock to expire" << endl;

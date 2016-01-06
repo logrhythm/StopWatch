@@ -104,10 +104,12 @@ protected:
       mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Checking to see if the threads should be joined" << std::endl;
       if (mTimerThread.joinable() && mExit) {
          std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
          mTimerThread.join();
       }   
+      std::cout << "STOPPER" << boost::this_thread::get_id() << ": Exiting" << std::endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

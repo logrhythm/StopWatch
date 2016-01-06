@@ -92,8 +92,7 @@ protected:
             std::cout << "THREAD " << boost::this_thread::get_id() << ": Waiting on lock" << std::endl;
             mCondition.wait(lck); 
          } catch (boost::thread_interrupted e) {
-            std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted while waiting on lock, breaking." << std::endl;
-            break;
+            std::cout << "THREAD " << boost::this_thread::get_id() << ": Interrupted while waiting on lock, reentering loop." << std::endl;
          }
       } while (!mExit);
       std::cout << "THREAD " << boost::this_thread::get_id() << ": Out of loop! Exiting" << std::endl;
@@ -109,7 +108,7 @@ protected:
          std::cout << "STOPPER " << boost::this_thread::get_id() << ": Joining threads" << std::endl;
          mTimerThread.join();
       }   
-      std::cout << "STOPPER" << boost::this_thread::get_id() << ": Exiting" << std::endl;
+      std::cout << "STOPPER " << boost::this_thread::get_id() << ": Exiting" << std::endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

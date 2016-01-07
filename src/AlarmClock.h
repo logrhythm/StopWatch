@@ -44,13 +44,18 @@ public:
    void Reset() {
       boost::unique_lock<boost::mutex> lck(mMutex);
       mReset.store(true);
+
+      // If the thread isn't expired, stop it.
       if (!mExpired.load()) {
          StopBackgroundThread();
       }
+
+      // Reset the expired value and notify the thread to restart
       mExpired.store(0);
-      {mCondition.notify_all();}
+      {mCondition.notify_all();} // Needed in the case it is already waiting
    }
 
+   // Used for performance testing, can be removed. 
    unsigned int SleptTime() {
       return mSleptTime.load();
    }
@@ -67,22 +72,27 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
+         // Call the sleep function
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
             // Expired, should increment mExpired
             mExpired++;
-         } else if (mExit) {
+         } else if (mExit) { // The thread was interrupted on a destructor
             break;
          }
 
          boost::unique_lock<boost::mutex> lck(mMutex);
 
-         if (!mReset) {
+         if (!mReset) { // If the thread shouldn't reset
             try {
+               // Wait for the reset method to notify (reduces unnecessary 
+               // sleeping)
                mCondition.wait(lck); 
-            } catch (boost::thread_interrupted e) {
-            }
+            } catch (boost::thread_interrupted e) {} // In the rare case
+            // that the thread is interrupted during waiting, it means
+            // that it should either exit (taken care of by the while) or
+            // reset, which it will do automatically.
          }
          mReset.store(false);
       } while (!mExit);
@@ -99,6 +109,9 @@ protected:
 
    unsigned int SleepUs(unsigned int t) {
       try {
+         // Time points used in calculating the total overhead of the program.
+         // They can be removed for production code or put in if statements. 
+         // I wasn't sure which was a better idea.
          std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
          boost::this_thread::sleep_for(boost::chrono::microseconds(t));
          std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();

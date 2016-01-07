@@ -3,7 +3,7 @@
  * Author: Amanda Carbonari
  * Created: January 6, 2015 9:00am
  *
- * WARNING: This only measures CPU time
+ * WARNING: This measurement will include sleep time (for overall)
  */
 
 #include <ctime>
@@ -38,6 +38,8 @@ template <typename T> void testReset(unsigned int sleep_time) {
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
    cout << "Reset Time: " << reset_time << " us" << endl;
    cout << "Overall Time: " << overall_time << " us" << endl;
+   auto overhead = overall_time + reset_time - alerter.SleepTimeUs();
+   cout << "Overhead Time: " << overhead << " us" << endl;
 }
 
 int main(int, const char**) {

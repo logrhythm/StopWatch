@@ -23,6 +23,7 @@ public:
    AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
       mExit(false),
       mReset(false),
+      mSleptTime(0),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
@@ -61,6 +62,10 @@ public:
    
    bool Expired() {
       return mExpired.load();
+   }
+
+   unsigned int SleepTimeUs() {
+      return mSleptTime.load();
    }
 
    void Reset() {
@@ -178,10 +183,11 @@ protected:
          boost::this_thread::sleep_for(boost::chrono::microseconds(t));
          std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
          auto sleep_time = std::chrono::duration_cast<microseconds>(t2-t1).count();
-         if (true) {
+         if (print) {
             std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Time slept = " << sleep_time << std::endl;
             //std::cout << "SLEEPER " << boost::this_thread::get_id() << ": Returning 0" << std::endl;
          }
+         mSleptTime.store(sleep_time);
          return 0;
       } catch (boost::thread_interrupted e) {
          if (print) {
@@ -209,6 +215,7 @@ protected:
 private:
 
    std::atomic<unsigned int> mExpired;
+   std::atomic<unsigned int> mSleptTime;
    std::atomic<bool> mExit;
    std::atomic<bool> mReset;
    const int kSleepTime;

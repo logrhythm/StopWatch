@@ -11,7 +11,6 @@
 #include <thread>
 using namespace std;
 using namespace std::chrono;
-using namespace high_resolution_clock;
 typedef std::chrono::microseconds microseconds;
 typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::seconds seconds;
@@ -23,7 +22,7 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 
 template <typename T> void testReset(unsigned int sleep_time) {
    // Start overall measurements
-   time_point start_overall = now();
+   high_resolution_clock::time_point start_overall = high_resolution_clock::now();
    cout << "Creating Alarm Clock" << endl;
    AlarmClock<T> alerter(sleep_time);
    cout << "Starting clock and resetting" << endl;
@@ -33,12 +32,12 @@ template <typename T> void testReset(unsigned int sleep_time) {
    std::this_thread::sleep_for(microseconds(sleep_time/2));
 
    // Start the reset measurement
-   time_point start = now();
+   high_resolution_clock::time_point start = high_resolution_clock::now();
 
    alerter.Reset();
    
    // Get the ending reset measurment
-   time_point end = now();
+   high_resolution_clock::time_point end = high_resolution_clock::now();
 
    // Calculate the reset time
    auto reset_time = duration_cast<microseconds>(end - start).count();
@@ -48,7 +47,7 @@ template <typename T> void testReset(unsigned int sleep_time) {
    WaitForAlarmClockToExpire(alerter);
 
    // Get the ending overall time
-   time_point end_overall = now();
+   high_resolution_clock::time_point end_overall = high_resolution_clock::now();
 
    // Calculate the overall time
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();

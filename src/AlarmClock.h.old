@@ -46,6 +46,10 @@ public:
       mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
    }
 
+   unsigned int SleptTime() {
+      return -1;
+   }
+
    int SleepTimeUs() {
       return kSleepTimeUsCount;
    }

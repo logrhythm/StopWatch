@@ -64,10 +64,6 @@ public:
       return mExpired.load();
    }
 
-   int SleepTimeUs() {
-      return mSleptTime.load();
-   }
-
    void Reset() {
       if (print) {
          std::cout << "RESET " << boost::this_thread::get_id() << ": Creating lock" << std::endl;
@@ -91,6 +87,14 @@ public:
       if (print) {
          std::cout << "RESET " << boost::this_thread::get_id() << ": Finished!" << std::endl;
       }
+   }
+
+   unsigned int SleptTime() {
+      return mSleptTime.load();
+   }
+
+   int SleepTimeUs() {
+      return kSleepTimeUsCount;
    }
    
    int SleepTimeMs() {

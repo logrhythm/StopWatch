@@ -38,7 +38,12 @@ template <typename T> void testReset(unsigned int sleep_time) {
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
    cout << "Reset Time: " << reset_time << " us" << endl;
    cout << "Overall Time: " << overall_time << " us" << endl;
-   auto overhead = overall_time + reset_time - alerter.SleepTimeUs();
+   auto slept_time = alerter.SleptTime();
+   if (slept_time == -1) {
+      slept_time = alerter.SleepTimeUs();
+   }
+
+   auto overhead = overall_time + reset_time - slept_time;
    cout << "Overhead Time: " << overhead << " us" << endl;
 }
 

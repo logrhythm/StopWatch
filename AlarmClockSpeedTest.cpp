@@ -49,7 +49,7 @@ template <typename T> void testReset(unsigned int sleep_time) {
 }
 
 int main(int, const char**) {
-   unsigned int us = 1000;
+   unsigned int us = 400;
    unsigned int ms = 3;
    unsigned int s = 1;
 

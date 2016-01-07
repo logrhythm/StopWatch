@@ -36,15 +36,16 @@ template <typename T> void testReset(unsigned int sleep_time) {
    WaitForAlarmClockToExpire(alerter);
    high_resolution_clock::time_point end_overall = high_resolution_clock::now();
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
-   cout << "Reset Time: " << reset_time << " us" << endl;
-   cout << "Overall Time: " << overall_time << " us" << endl;
+   cout << "Results:"
+   cout << "\tReset Time: " << reset_time << " us" << endl;
+   cout << "\tOverall Time: " << overall_time << " us" << endl;
    auto slept_time = alerter.SleptTime();
    if (slept_time == -1) {
       slept_time = alerter.SleepTimeUs();
    }
 
    auto overhead = overall_time + reset_time - slept_time;
-   cout << "Overhead Time: " << overhead << " us" << endl;
+   cout << "\tOverhead Time: " << overhead << " us" << endl;
 }
 
 int main(int, const char**) {
@@ -52,11 +53,11 @@ int main(int, const char**) {
    unsigned int ms = 3;
    unsigned int s = 1;
 
-   cout << "Testing microseconds" << endl;
+   cout << "----------------------------Testing microseconds----------------------------" << endl;
    testReset<microseconds>(us);
-   cout << "Testing milliseconds" << endl;
+   cout << "----------------------------Testing milliseconds----------------------------" << endl;
    testReset<milliseconds>(ms);
-   cout << "Testing seconds" << endl;
+   cout << "----------------------------   Testing seconds  ----------------------------" << endl;
    testReset<seconds>(s);
 
 }

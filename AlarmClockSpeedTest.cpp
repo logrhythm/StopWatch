@@ -6,7 +6,7 @@
 
 #include <ctime>
 #include <iostream>
-#include <AlarmClock.h> // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
+#include <AlarmClock.h.old> // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
 #include <chrono>
 #include <thread>
 using namespace std;

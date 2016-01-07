@@ -21,9 +21,9 @@ public:
    bool print = false;
    
    AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+      mSleptTime(0),
       mExit(false),
       mReset(false),
-      mSleptTime(0),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),

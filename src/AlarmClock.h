@@ -110,7 +110,7 @@ protected:
       }
    }
 
-   unsigned int AlerterFakeSleep() {
+   void AlerterFakeSleep() {
       boost::this_thread::sleep_for(boost::chrono::microseconds(10));
    }
    

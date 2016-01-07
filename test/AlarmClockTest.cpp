@@ -11,6 +11,7 @@
 #include "StopWatch.h"
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 std::atomic<unsigned int> AlarmClockTest::mFakeSleepUs(0);
 

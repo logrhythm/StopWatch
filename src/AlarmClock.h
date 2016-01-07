@@ -64,7 +64,7 @@ public:
       return mExpired.load();
    }
 
-   unsigned int SleepTimeUs() {
+   int SleepTimeUs() {
       return mSleptTime.load();
    }
 
@@ -91,10 +91,6 @@ public:
       if (print) {
          std::cout << "RESET " << boost::this_thread::get_id() << ": Finished!" << std::endl;
       }
-   }
-
-   int SleepTimeUs() {
-      return kSleepTimeUsCount;
    }
    
    int SleepTimeMs() {

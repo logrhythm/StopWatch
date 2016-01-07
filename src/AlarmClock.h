@@ -3,7 +3,7 @@
  * Author: Amanda Carbonari
  * Created: January 5, 2016 4:35pm
  * Description: Utilizes the boost library to create a singleton interruptable thread
- *   that "communicates" with the main thread via a mutex, locks and condition variables.
+ *   that "communicates" with the main thread via a mutex, locks, and condition variables.
  */
 
 #pragma once

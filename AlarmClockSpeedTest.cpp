@@ -25,9 +25,11 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 template <typename T> void testReset(unsigned int sleep_time) {
    high_resolution_clock::time_point start_overall = high_resolution_clock::now();
    cout << "Creating Alarm Clock" << endl;
-   //AlarmClock<microseconds> alerter(us);
    AlarmClock<T> alerter(sleep_time);
    cout << "Starting clock and resetting" << endl;
+
+   std::this_thread::sleep_for(microseconds(sleep_time/2));
+
    high_resolution_clock::time_point start = high_resolution_clock::now();
    alerter.Reset();
    high_resolution_clock::time_point end = high_resolution_clock::now();

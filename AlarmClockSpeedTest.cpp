@@ -36,7 +36,7 @@ template <typename T> void testReset(unsigned int sleep_time) {
    WaitForAlarmClockToExpire(alerter);
    high_resolution_clock::time_point end_overall = high_resolution_clock::now();
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
-   cout << "Results:"
+   cout << "Results:" << endl;
    cout << "\tReset Time: " << reset_time << " us" << endl;
    cout << "\tOverall Time: " << overall_time << " us" << endl;
    auto slept_time = alerter.SleptTime();

@@ -53,11 +53,11 @@ int main(int, const char**) {
    unsigned int ms = 3;
    unsigned int s = 1;
 
-   cout << "----------------------------Testing microseconds----------------------------" << endl;
+   cout << "---------------------------- Testing " << us << " microseconds ----------------------------" << endl;
    testReset<microseconds>(us);
-   cout << "----------------------------Testing milliseconds----------------------------" << endl;
+   cout << "---------------------------- Testing " << ms << " milliseconds ----------------------------" << endl;
    testReset<milliseconds>(ms);
-   cout << "----------------------------   Testing seconds  ----------------------------" << endl;
+   cout << "---------------------------- Testing " << s << " seconds ----------------------------" << endl;
    testReset<seconds>(s);
 
 }

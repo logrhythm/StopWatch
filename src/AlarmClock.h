@@ -109,6 +109,10 @@ protected:
          return 1;
       }
    }
+
+   unsigned int AlerterFakeSleep() {
+      boost::this_thread::sleep_for(boost::chrono::microseconds(10));
+   }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
       return std::chrono::duration_cast<milliseconds>(t).count();

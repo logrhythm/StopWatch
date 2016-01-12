@@ -33,7 +33,7 @@ public:
          if (mSleepFunction == nullptr) {
             mSleepFunction = bind(&AlarmClock::SleepUs, this, placeholders::_1);
          }
-         thread mTimerThread(&AlarmClock::AlarmClockInterruptableThread);
+         mTimerThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
    }
 
    virtual ~AlarmClock() {

@@ -115,11 +115,11 @@ protected:
             // if it should restart, it will automatically loop. 
             mCondition.wait(lck); 
             // cout << "THREAD: Done waiting on lock!" << endl;
+            lck.unlock();
          }
          // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
          // cout << "THREAD: checking while loop" << endl;
-         lck.unlock();
       } while (!mExit);
       // cout << "THREAD: exiting!" << endl;
    }

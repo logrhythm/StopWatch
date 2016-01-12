@@ -124,13 +124,12 @@ protected:
    }
   
    void StopBackgroundThread() {
-      // Change to setting the interrupt atomic. It should then notify?
-      // mTimerThread.interrupt();
+      // Change to setting the interrupt to atomic. It should then notify?
+      // cout << "STOPPER: Notifying all threads" << endl;
+      // mCondition.notify_all();
+      // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
-      // cout << "STOPPER: Notifying all threads" << endl;
-      mCondition.notify_all();
-      // cout << "STOPPER: Checking if joinable and exit" << endl;
       if (mTimerThread.joinable() && mExit) {
          // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();

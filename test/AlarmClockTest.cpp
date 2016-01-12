@@ -172,21 +172,21 @@ TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    int ms = 750;
    cout << "TEST: creating alarm clock" << endl;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
-   cout << "TEST: expecting false for expired" << endl;
+   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   cout << "TEST: waiting for alarm clock to expire" << endl;
+   // cout << "TEST: waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-   cout << "TEST: expecting true for expired" << endl;
+   // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
    
    // Reset after AlarmClock has expired
-   cout << "TEST: resetting alarm clock" << endl;
+   // cout << "TEST: resetting alarm clock" << endl;
    alerter.Reset();
-   cout << "TEST: expecting false for expired" << endl;
+   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   cout << "TEST: waiting for alarm clock to expire" << endl;
+   // cout << "TEST: waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-   cout << "TEST: expecting true for expired" << endl;
+   // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
    cout << "TEST: finished and calling destrcutor" << endl;
 }

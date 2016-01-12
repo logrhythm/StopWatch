@@ -139,12 +139,15 @@ protected:
    }
 
    unsigned int SleepUs(unsigned int t) {
+      cout << "SLEEPER: Starting for loop" << endl;
       for (int i = 1; i < t; i++) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
+            cout << "SLEEPER: reset or exit" << endl;
             return 1;
          }
       }
+      cout << "SLEEPER: expired" << endl;
       return 0;
    }
    

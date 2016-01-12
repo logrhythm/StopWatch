@@ -38,16 +38,16 @@ public:
 
    virtual ~AlarmClock() {
       {
-         cout << "DESTRUCTOR: Obtaining lock" << endl;
+         // cout << "DESTRUCTOR: Obtaining lock" << endl;
          unique_lock<mutex> lck(mMutex);
-         cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
-         cout << "DESTRUCTOR: Notifying all" << endl;
+         // cout << "DESTRUCTOR: Notifying all" << endl;
          mCondition.notify_all();
       }
-      cout << "DESTRUCTOR: Stopping background thread" << endl;
+      // cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
-      cout << "DESTRUCTOR: Finished!" << endl;
+      // cout << "DESTRUCTOR: Finished!" << endl;
    }
    
    bool Expired() {

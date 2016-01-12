@@ -119,6 +119,7 @@ protected:
          // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
          // cout << "THREAD: checking while loop" << endl;
+         mCondition.notify_all();
       } while (!mExit);
       // cout << "THREAD: exiting!" << endl;
    }

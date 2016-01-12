@@ -26,7 +26,7 @@ namespace {
    void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
       // cout << "WAIT: Entering while" << endl;
       while (!alerter.Expired());
-      cout << "WAIT: Exiting" << endl;
+      // cout << "WAIT: Exiting" << endl;
    }
 
    template<typename Duration>

@@ -2,12 +2,16 @@
  * File:   AlarmClockTest.cpp
  * Author: Craig Cogdill
  * Created: October 15, 2015 10:45am
+ * Modifier: Amanda Carbonari
+ * Modified Date: January 5, 2015 3:45pm
  */
 
 #include "AlarmClockTest.h"
 #include "AlarmClock.h"
 #include "StopWatch.h"
 #include <chrono>
+#include <iostream>
+#include <thread>
 
 std::atomic<unsigned int> AlarmClockTest::mFakeSleepUs(0);
 
@@ -20,7 +24,9 @@ namespace {
 
    template<typename T>
    void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
+      // cout << "WAIT: Entering while" << endl;
       while (!alerter.Expired());
+      // cout << "WAIT: Exiting" << endl;
    }
 
    template<typename Duration>
@@ -33,8 +39,10 @@ namespace {
       return std::chrono::duration_cast<milliseconds>(t).count();
    }
 
-   void FakeSleep(unsigned int usToSleep) {
-      AlarmClockTest::mFakeSleepUs.store(usToSleep); 
+   unsigned int FakeSleep(unsigned int usToSleep) {
+      AlarmClockTest::mFakeSleepUs.store(usToSleep);
+      std::this_thread::sleep_for(microseconds(100));
+      return 0;
    }
 }
 
@@ -145,19 +153,58 @@ TEST_F(AlarmClockTest, secondsSimple) {
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
 }
 
+// Not working, not sure what it's supposed to be testing?
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
+   // cout << "TEST: Creating pointer" << endl;
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
+   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(acPtr->Expired());
+   this_thread::sleep_for(microseconds(10));
+   // cout << "TEST: resetting pointer" << endl;
    acPtr.reset();
+   // cout << "TEST: expecting true for elapsed seconds" << endl;
    EXPECT_TRUE(sw.ElapsedSec() < 2);
+   // cout << "TEST: calling destructor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    // First run
    int ms = 750;
-   StopWatch testTimer;
+   // cout << "TEST: creating alarm clock" << endl;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   // cout << "TEST: expecting false for expired" << endl;
+   EXPECT_FALSE(alerter.Expired());
+   // cout << "TEST: waiting for alarm clock to expire" << endl;
+   WaitForAlarmClockToExpire(alerter);
+   // cout << "TEST: expecting true for expired" << endl;
+   EXPECT_TRUE(alerter.Expired());
+   
+   // Reset after AlarmClock has expired
+   // cout << "TEST: resetting alarm clock" << endl;
+   alerter.Reset();
+   // cout << "TEST: expecting false for expired" << endl;
+   EXPECT_FALSE(alerter.Expired());
+   // cout << "TEST: waiting for alarm clock to expire" << endl;
+   WaitForAlarmClockToExpire(alerter);
+   // cout << "TEST: expecting true for expired" << endl;
+   EXPECT_TRUE(alerter.Expired());
+   // cout << "TEST: finished and calling destrcutor" << endl;
+}
+
+TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
+   int ms = 7500;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+}
+
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsAfterExpired) {
+   // First run
+   int ms = 750;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
    EXPECT_FALSE(alerter.Expired());
    WaitForAlarmClockToExpire(alerter);
@@ -168,13 +215,41 @@ TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    EXPECT_FALSE(alerter.Expired());
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
+
+   // Reset again after it has expired
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
 }
 
-TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsBeforeExpired) {
    int ms = 7500;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
    EXPECT_FALSE(alerter.Expired());
    alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+}
+
+TEST_F(AlarmClockTest, milliseconds_MultipleResetsMixed) {
+   int ms = 750;
+   AlarmClock<milliseconds> alerter(ms, FakeSleep);
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   WaitForAlarmClockToExpire(alerter);
+   EXPECT_TRUE(alerter.Expired());
+
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
+   alerter.Reset();
+   EXPECT_FALSE(alerter.Expired());
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
 }

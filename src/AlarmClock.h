@@ -1,37 +1,53 @@
 /* 
  * File:   AlarmClock.h
- * Author: Craig Cogdill
- * Created: October 15, 2015 10:45am
+ * Author: Amanda Carbonari
+ * Created: January 5, 2016 4:35pm
+ * Description: Utilizes the boost library to create a singleton interruptable thread
+ *   that "communicates" with the main thread via a mutex, locks, and condition variables.
  */
 
 #pragma once
 #include <chrono>
 #include <thread>
+#include <mutex>
 #include <atomic>
-#include <future>
+#include <condition_variable>
 #include <functional>
-#include "StopWatch.h"
-
+#include <iostream>
+using namespace std;
 
 template<typename Duration> class AlarmClock {
 public:
-   typedef std::chrono::microseconds microseconds;
-   typedef std::chrono::milliseconds milliseconds;
-   typedef std::chrono::seconds seconds;
-   
-   AlarmClock(unsigned int sleepDuration, std::function<void(unsigned int)> funcPtr = nullptr) : mExpired(false),
+   typedef chrono::microseconds microseconds;
+   typedef chrono::milliseconds milliseconds;
+   typedef chrono::seconds seconds;
+
+   AlarmClock(unsigned int sleepDuration, function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+      mSleptTime(0),
+      mExit(false),
+      mReset(false),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
          if (mSleepFunction == nullptr) {
-            mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
+            mSleepFunction = bind(&AlarmClock::SleepUs, this, placeholders::_1);
          }
-         mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread,this);
+         mTimerThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
    }
-   
+
    virtual ~AlarmClock() {
+      {
+         // cout << "DESTRUCTOR: Obtaining lock" << endl;
+         unique_lock<mutex> lck(mMutex);
+         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         mExit.store(true);
+         // cout << "DESTRUCTOR: Notifying all" << endl;
+         mCondition.notify_all();
+      }
+      // cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
+      // cout << "DESTRUCTOR: Finished!" << endl;
    }
    
    bool Expired() {
@@ -39,11 +55,25 @@ public:
    }
 
    void Reset() {
-      if (!mExpired.load()) {
-         StopBackgroundThread();
-      }
-      mExpired.store(false); 
-      mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
+      cout << "RESET: Creating lock" << endl;
+      unique_lock<mutex> lck(mMutex);
+      // cout << "RESET: Setting mReset to true" << endl;
+      mReset.store(true);
+      // // If the thread isn't expired, stop it.
+      // if (!mExpired.load()) {
+      //    StopBackgroundThread();
+      // }
+      // Reset the expired value and notify the thread to restart
+      // cout << "RESET: setting mExpired to 0" << endl;
+      mExpired.store(0);
+      // cout << "RESET: notifying all" << endl;
+      mCondition.notify_all(); // Needed in the case it is already waiting
+      // cout << "RESET: finished!" << endl;
+   }
+
+   // Used for performance testing, can be removed. 
+   unsigned int SleptTime() {
+      return mSleptTime.load();
    }
 
    int SleepTimeUs() {
@@ -56,87 +86,91 @@ public:
 
 protected:
 
-   void AlarmClockThread() {
-      SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
+   void AlarmClockInterruptableThread() {
+      do {
+         // cout << "THREAD: calling sleep function" << endl;
+         // Call the sleep function
+         unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
+
+         if (retVal == 0) {
+            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
+            // Expired normally, should increment mExpired
+            mExpired++;
+         } 
+
+         if (mExit) { // The thread was interrupted on a destructor or 
+            // the destructor was called during the sleep function
+            // cout << "THREAD: break!" << endl;
+            break;
+         }
+
+         if (!mReset) { // If the thread shouldn't reset
+            // cout << "THREAD: Grabbing lock" << endl;
+            unique_lock<mutex> lck(mMutex);
+            // cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
+            // Wait to get notified. It will get notified under two conditions:
+            //    1) Should restart
+            //    2) Should exit
+            // If it should exit, the while portion of the do while will execute,
+            // if it should restart, it will automatically loop. 
+            mCondition.wait(lck); 
+            // cout << "THREAD: Done waiting on lock!" << endl;
+            lck.unlock();
+         }
+         // cout << "THREAD: setting reset to false because we are resetting" << endl;
+         mReset.store(false);
+         // cout << "THREAD: checking while loop" << endl;
+      } while (!mExit);
+      // cout << "THREAD: exiting!" << endl;
    }
   
    void StopBackgroundThread() {
-      mExpired.store(true);
-      mExited.wait();
-   }
-
-   bool SleepTimeIsBelow500ms() {
-      return Duration(kSleepTime) <= microseconds(kSmallestIntervalInUS);
-   }
-
-   void SleepForFullAmount() {
-      mSleepFunction(kSleepTimeUsCount);
-      mExpired.store(true);
-   }
-
-   void SleepUs(unsigned int t) {
-      std::this_thread::sleep_for(microseconds(t));
-   }
-   
-   // If 500ms is NOT an even divisor of the amount of sleep
-   //    time given, should sleep for every multiple of 500ms
-   //    that divides, then check the remaining time and just
-   //    sleep for only that last bit.
-   //
-   // If 500ms IS an even divisor of the sleep time, sleep for 
-   //    all but one multiple of 500ms. There is overhead induced
-   //    by the while loop, so if the full amount of time is slept,
-   //    the precision of the alarm clock will suffer.
-   size_t GetNumberOfSleepIntervals() {
-      return (kSleepTimeMsCount % kSmallestIntervalInMS == 0) ?
-             ((kSleepTimeMsCount/kSmallestIntervalInMS) - 1) :
-             (kSleepTimeMsCount/kSmallestIntervalInMS);
-   }
-  
-   void SleepForRemainder(const unsigned int& currentSleptFor) {
-      if (currentSleptFor < kSleepTimeUsCount) {
-         mSleepFunction(kSleepTimeUsCount - currentSleptFor);
+      // Change to setting the interrupt to atomic. It should then notify?
+      // cout << "STOPPER: Notifying all threads" << endl;
+      // mCondition.notify_all();
+      // cout << "STOPPER: Checking if joinable and exit" << endl;
+      // Check to see if the thread is joinable and only join if it is supposed
+      // to exit.
+      if (mTimerThread.joinable() && mExit) {
+         // cout << "STOPPER: joining with thread" << endl;
+         mTimerThread.join();
       }
-   } 
-
-   void SleepInIntervals() {
-      StopWatch timer;
-      size_t numberOfSleeps = GetNumberOfSleepIntervals();
-      while (KeepRunning() && numberOfSleeps > 0) {
-         mSleepFunction(kSmallestIntervalInUS);
-         --numberOfSleeps; 
-      }
-      auto currentSleptFor = timer.ElapsedUs();
-      if (KeepRunning()) {
-         SleepForRemainder(currentSleptFor);
-      }
-      mExpired.store(true);
+      // cout << "STOPPER: finished and exiting" << endl;
    }
 
-   bool KeepRunning() {
-      return !mExpired.load();
+   unsigned int SleepUs(unsigned int t) {
+      for (int i = 1; i < t; i++) {
+         this_thread::sleep_for(chrono::microseconds(1));
+         if (mReset || mExit) {
+            return 1;
+         }
+      }
+      return 0;
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
-      return std::chrono::duration_cast<milliseconds>(t).count();
+      return chrono::duration_cast<milliseconds>(t).count();
    }
    
    unsigned int ConvertToMicrosecondsCount(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t).count();
+      return chrono::duration_cast<microseconds>(t).count();
    }
    
    microseconds ConvertToMicroseconds(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t);
+      return chrono::duration_cast<microseconds>(t);
    }
    
 private:
 
-   std::atomic<bool> mExpired;
+   atomic<unsigned int> mExpired;
+   atomic<unsigned int> mSleptTime;
+   atomic<bool> mExit;
+   atomic<bool> mReset;
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;
-   std::function<void(unsigned int)> mSleepFunction;
-   std::future<void> mExited;
-   const unsigned int kSmallestIntervalInMS = 500;
-   const unsigned int kSmallestIntervalInUS = 500 * 1000; // 500ms
+   function<unsigned int (unsigned int)> mSleepFunction;
+   thread mTimerThread;
+   mutex mMutex;
+   condition_variable mCondition;
 };

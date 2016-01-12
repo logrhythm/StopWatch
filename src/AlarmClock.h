@@ -55,7 +55,7 @@ public:
    }
 
    void Reset() {
-      cout << "RESET: Creating lock" << endl;
+      // cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
       // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);

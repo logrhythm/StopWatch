@@ -42,7 +42,7 @@ make -j6
 ./UnitTestRunner
 mkdir -p $RPM_BUILD_ROOT/usr/local/probe/lib
 cp -rfd lib%{name}.so* $RPM_BUILD_ROOT/usr/local/probe/lib
-rm -f RPM_BUILD_ROOT/usr/local/probe/lib/libgtest_170_lib.so
+rm -f $RPM_BUILD_ROOT/usr/local/probe/lib/libgtest_170_lib.so
 mkdir -p $RPM_BUILD_ROOT/usr/local/probe/include
 cp src/*.h $RPM_BUILD_ROOT/usr/local/probe/include
 

@@ -55,7 +55,7 @@ public:
    }
 
    void Reset() {
-      // cout << "RESET: Creating lock" << endl;
+      cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
       // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
@@ -132,7 +132,7 @@ protected:
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: joining with thread" << endl;
+         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
       // cout << "STOPPER: finished and exiting" << endl;

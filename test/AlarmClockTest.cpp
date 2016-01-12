@@ -151,13 +151,19 @@ TEST_F(AlarmClockTest, secondsSimple) {
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
 }
 
+// Not working, not sure what it's supposed to be testing?
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
+   cout << "TEST: Creating pointer" << endl;
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
+   cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(acPtr->Expired());
+   cout << "TEST: resetting" << endl;
    acPtr.reset();
+   cout << "TEST: expecting true for elapsed seconds" << endl;
    EXPECT_TRUE(sw.ElapsedSec() < 2);
+   cout << "TEST: calling destructor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {

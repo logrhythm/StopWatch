@@ -55,20 +55,20 @@ public:
    }
 
    void Reset() {
-      cout << "RESET: Creating lock" << endl;
+      // cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
-      cout << "RESET: Setting mReset to true" << endl;
+      // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
       // // If the thread isn't expired, stop it.
       // if (!mExpired.load()) {
       //    StopBackgroundThread();
       // }
       // Reset the expired value and notify the thread to restart
-      cout << "RESET: setting mExpired to 0" << endl;
+      // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
-      cout << "RESET: notifying all" << endl;
+      // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      cout << "RESET: finished!" << endl;
+      // cout << "RESET: finished!" << endl;
    }
 
    // Used for performance testing, can be removed. 

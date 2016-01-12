@@ -90,8 +90,11 @@ TEST_F(AlarmClockTest, microsecondsLessThan500ms) {
    WaitForAlarmClockToExpire(alerter);
    cout << "Expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
+   cout << "Expecting greater than" << endl;
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
+   cout << "Expecting less than" << endl;
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);
+   cout << "About to destruct" << endl;
 }
 
 TEST_F(AlarmClockTest, microsecondsGreaterThan500ms) {

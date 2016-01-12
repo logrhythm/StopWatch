@@ -37,12 +37,14 @@ public:
    }
 
    virtual ~AlarmClock() {
-      cout << "DESTRUCTOR: Obtaining lock" << endl;
-      unique_lock<mutex> lck(mMutex);
-      cout << "DESTRUCTOR: Setting mExit to true" << endl;
-      mExit.store(true);
-      cout << "DESTRUCTOR: Notifying all" << endl;
-      mCondition.notify_all();
+      {
+         cout << "DESTRUCTOR: Obtaining lock" << endl;
+         unique_lock<mutex> lck(mMutex);
+         cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         mExit.store(true);
+         cout << "DESTRUCTOR: Notifying all" << endl;
+         mCondition.notify_all();
+      }
       cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
       cout << "DESTRUCTOR: Finished!" << endl;
@@ -124,10 +126,14 @@ protected:
       // mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
+      cout << "STOPPER: Notifying all threads" << endl;
       mCondition.notify_all();
+      cout << "STOPPER: Checking if joinable and exit" << endl;
       if (mTimerThread.joinable() && mExit) {
+         cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
-      }   
+      }
+      cout << "STOPPER: finished and exiting" << endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

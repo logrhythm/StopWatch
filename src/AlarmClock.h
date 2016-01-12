@@ -45,6 +45,7 @@ public:
       mCondition.notify_all();
       cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
+      cout << "DESTRUCTOR: Finished!" << endl;
    }
    
    bool Expired() {
@@ -123,6 +124,7 @@ protected:
       // mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
+      mCondition.notify_all();
       if (mTimerThread.joinable() && mExit) {
          mTimerThread.join();
       }   

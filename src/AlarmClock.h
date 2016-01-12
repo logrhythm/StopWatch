@@ -8,17 +8,18 @@
 
 #pragma once
 #include <chrono>
-#include <boost/thread.hpp>
+#include <thread>
 #include <atomic>
 #include <functional>
+using namespace std;
 
 template<typename Duration> class AlarmClock {
 public:
-   typedef std::chrono::microseconds microseconds;
-   typedef std::chrono::milliseconds milliseconds;
-   typedef std::chrono::seconds seconds;
+   typedef chrono::microseconds microseconds;
+   typedef chrono::milliseconds milliseconds;
+   typedef chrono::seconds seconds;
 
-   AlarmClock(unsigned int sleepDuration, std::function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+   AlarmClock(unsigned int sleepDuration, function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
       mSleptTime(0),
       mExit(false),
       mReset(false),
@@ -27,9 +28,9 @@ public:
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
          if (mSleepFunction == nullptr) {
-            mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
+            mSleepFunction = bind(&AlarmClock::SleepUs, this, placeholders::_1);
          }
-         mTimerThread = boost::thread(&AlarmClock::AlarmClockInterruptableThread, this);
+         mTimerThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
    }
 
    virtual ~AlarmClock() {
@@ -42,17 +43,15 @@ public:
    }
 
    void Reset() {
-      boost::unique_lock<boost::mutex> lck(mMutex);
+      unique_lock<mutex> lck(mMutex);
       mReset.store(true);
-
-      // If the thread isn't expired, stop it.
-      if (!mExpired.load()) {
-         StopBackgroundThread();
-      }
-
+      // // If the thread isn't expired, stop it.
+      // if (!mExpired.load()) {
+      //    StopBackgroundThread();
+      // }
       // Reset the expired value and notify the thread to restart
       mExpired.store(0);
-      {mCondition.notify_all();} // Needed in the case it is already waiting
+      mCondition.notify_all(); // Needed in the case it is already waiting
    }
 
    // Used for performance testing, can be removed. 
@@ -76,30 +75,29 @@ protected:
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            // Expired, should increment mExpired
+            // Expired normally, should increment mExpired
             mExpired++;
          } else if (mExit) { // The thread was interrupted on a destructor
             break;
          }
 
-         boost::unique_lock<boost::mutex> lck(mMutex);
+         unique_lock<mutex> lck(mMutex);
 
          if (!mReset) { // If the thread shouldn't reset
-            try {
-               // Wait for the reset method to notify (reduces unnecessary 
-               // sleeping)
-               mCondition.wait(lck); 
-            } catch (boost::thread_interrupted e) {} // In the rare case
-            // that the thread is interrupted during waiting, it means
-            // that it should either exit (taken care of by the while) or
-            // reset, which it will do automatically.
+            // Wait to get notified. It will get notified under two conditions:
+            //    1) Should restart
+            //    2) Should exit
+            // If it should exit, the while portion of the do while will execute,
+            // if it should restart, it will automatically loop. 
+            mCondition.wait(lck); 
          }
          mReset.store(false);
       } while (!mExit);
    }
   
    void StopBackgroundThread() {
-      mTimerThread.interrupt();
+      // Change to setting the interrupt atomic. It should then notify?
+      // mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
@@ -108,44 +106,38 @@ protected:
    }
 
    unsigned int SleepUs(unsigned int t) {
-      try {
-         // Time points used in calculating the total overhead of the program.
-         // They can be removed for production code or put in if statements. 
-         // I wasn't sure which was a better idea.
-         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-         boost::this_thread::sleep_for(boost::chrono::microseconds(t));
-         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-         auto sleep_time = std::chrono::duration_cast<microseconds>(t2-t1).count();
-         mSleptTime.store(sleep_time);
-         return 0;
-      } catch (boost::thread_interrupted e) {
-         return 1;
+      for (int i = 1; i < chrono::microseconds(t); i++) {
+         this_thread::sleep_for(chrono::microseconds(1));
+         if (mReset || mExit) {
+            return 1;
+         }
       }
+      return 0;
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
-      return std::chrono::duration_cast<milliseconds>(t).count();
+      return chrono::duration_cast<milliseconds>(t).count();
    }
    
    unsigned int ConvertToMicrosecondsCount(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t).count();
+      return chrono::duration_cast<microseconds>(t).count();
    }
    
    microseconds ConvertToMicroseconds(Duration t) {
-      return boost::chrono::duration_cast<microseconds>(t);
+      return chrono::duration_cast<microseconds>(t);
    }
    
 private:
 
-   std::atomic<unsigned int> mExpired;
-   std::atomic<unsigned int> mSleptTime;
-   std::atomic<bool> mExit;
-   std::atomic<bool> mReset;
+   atomic<unsigned int> mExpired;
+   atomic<unsigned int> mSleptTime;
+   atomic<bool> mExit;
+   atomic<bool> mReset;
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;
-   std::function<unsigned int (unsigned int)> mSleepFunction;
-   boost::thread mTimerThread;
-   boost::mutex mMutex;
-   boost::condition_variable mCondition;
+   function<unsigned int (unsigned int)> mSleepFunction;
+   thread mTimerThread;
+   mutex mMutex;
+   condition_variable mCondition;
 };

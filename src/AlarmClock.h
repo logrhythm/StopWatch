@@ -140,6 +140,7 @@ protected:
 
    unsigned int SleepUs(unsigned int t) {
       cout << "SLEEPER: Starting for loop" << endl;
+      chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
       for (int i = 1; i < t; i++) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
@@ -147,6 +148,8 @@ protected:
             return 1;
          }
       }
+      chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+      mSleptTime = chrono::duration_cast<microseconds>(end - start).count();
       cout << "SLEEPER: expired" << endl;
       return 0;
    }

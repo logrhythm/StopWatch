@@ -88,39 +88,39 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
-         cout << "THREAD: calling sleep function" << endl;
+         // cout << "THREAD: calling sleep function" << endl;
          // Call the sleep function
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            cout << "THREAD: expired! " << (mExpired + 1) << endl;
+            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
          } 
 
          if (mExit) { // The thread was interrupted on a destructor or 
             // the destructor was called during the sleep function
-            cout << "THREAD: break!" << endl;
+            // cout << "THREAD: break!" << endl;
             break;
          }
 
          if (!mReset) { // If the thread shouldn't reset
-            cout << "THREAD: Grabbing lock" << endl;
+            // cout << "THREAD: Grabbing lock" << endl;
             unique_lock<mutex> lck(mMutex);
-            cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
+            // cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart
             //    2) Should exit
             // If it should exit, the while portion of the do while will execute,
             // if it should restart, it will automatically loop. 
             mCondition.wait(lck); 
-            cout << "THREAD: Done waiting on lock!" << endl;
+            // cout << "THREAD: Done waiting on lock!" << endl;
          }
-         cout << "THREAD: setting reset to false because we are resetting" << endl;
+         // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
-         cout << "THREAD: checking while loop" << endl;
+         // cout << "THREAD: checking while loop" << endl;
       } while (!mExit);
-      cout << "THREAD: exiting!" << endl;
+      // cout << "THREAD: exiting!" << endl;
    }
   
    void StopBackgroundThread() {

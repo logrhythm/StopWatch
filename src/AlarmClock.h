@@ -66,7 +66,7 @@ public:
       // Reset the expired value and notify the thread to restart
       // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
-      cout << "RESET: notifying all" << endl;
+      // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
       // cout << "RESET: finished!" << endl;
    }
@@ -132,7 +132,7 @@ protected:
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         // cout << "STOPPER: joining with thread" << endl;
+         cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
       // cout << "STOPPER: finished and exiting" << endl;

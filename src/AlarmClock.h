@@ -96,7 +96,9 @@ protected:
             cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
-         } else if (mExit) { // The thread was interrupted on a destructor
+         } 
+
+         if (mExit) { // The thread was interrupted on a destructor
             cout << "THREAD: break!" << endl;
             break;
          }

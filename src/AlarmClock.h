@@ -40,7 +40,7 @@ public:
       {
          // cout << "DESTRUCTOR: Obtaining lock" << endl;
          // unique_lock<mutex> lck(mMutex);
-         cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
          // cout << "DESTRUCTOR: Notifying all" << endl;
          mCondition.notify_all();
@@ -126,13 +126,13 @@ protected:
   
    void StopBackgroundThread() {
       // Change to setting the interrupt to atomic. It should then notify?
-      cout << "STOPPER: Notifying all threads" << endl;
+      // cout << "STOPPER: Notifying all threads" << endl;
       mCondition.notify_all();
       // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: joining with thread" << endl;
+         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
       // cout << "STOPPER: finished and exiting" << endl;

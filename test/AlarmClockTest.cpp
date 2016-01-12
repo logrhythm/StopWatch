@@ -159,7 +159,7 @@ TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
    cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(acPtr->Expired());
-   this_thread::sleep_for(microseconds(10))
+   this_thread::sleep_for(microseconds(10));
    cout << "TEST: resetting pointer" << endl;
    acPtr.reset();
    cout << "TEST: expecting true for elapsed seconds" << endl;

@@ -38,16 +38,16 @@ public:
 
    virtual ~AlarmClock() {
       {
-         cout << "DESTRUCTOR: Obtaining lock" << endl;
+         // cout << "DESTRUCTOR: Obtaining lock" << endl;
          unique_lock<mutex> lck(mMutex);
-         cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
-         cout << "DESTRUCTOR: Notifying all" << endl;
+         // cout << "DESTRUCTOR: Notifying all" << endl;
          mCondition.notify_all();
       }
-      cout << "DESTRUCTOR: Stopping background thread" << endl;
+      // cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
-      cout << "DESTRUCTOR: Finished!" << endl;
+      // cout << "DESTRUCTOR: Finished!" << endl;
    }
    
    bool Expired() {
@@ -55,20 +55,20 @@ public:
    }
 
    void Reset() {
-      cout << "RESET: Creating lock" << endl;
+      // cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
-      cout << "RESET: Setting mReset to true" << endl;
+      // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
       // // If the thread isn't expired, stop it.
       // if (!mExpired.load()) {
       //    StopBackgroundThread();
       // }
       // Reset the expired value and notify the thread to restart
-      cout << "RESET: setting mExpired to 0" << endl;
+      // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
-      cout << "RESET: notifying all" << endl;
+      // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      cout << "RESET: finished!" << endl;
+      // cout << "RESET: finished!" << endl;
    }
 
    // Used for performance testing, can be removed. 
@@ -129,14 +129,14 @@ protected:
       // mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
-      cout << "STOPPER: Notifying all threads" << endl;
+      // cout << "STOPPER: Notifying all threads" << endl;
       mCondition.notify_all();
-      cout << "STOPPER: Checking if joinable and exit" << endl;
+      // cout << "STOPPER: Checking if joinable and exit" << endl;
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: joining with thread" << endl;
+         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
-      cout << "STOPPER: finished and exiting" << endl;
+      // cout << "STOPPER: finished and exiting" << endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

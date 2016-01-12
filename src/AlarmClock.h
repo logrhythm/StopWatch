@@ -104,10 +104,9 @@ protected:
             break;
          }
 
-         cout << "THREAD: Grabbing lock" << endl;
-         unique_lock<mutex> lck(mMutex);
-
          if (!mReset) { // If the thread shouldn't reset
+            cout << "THREAD: Grabbing lock" << endl;
+            unique_lock<mutex> lck(mMutex);
             cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart

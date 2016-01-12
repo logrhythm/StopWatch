@@ -38,16 +38,16 @@ public:
 
    virtual ~AlarmClock() {
       {
-         cout << "DESTRUCTOR: Obtaining lock" << endl;
+         // cout << "DESTRUCTOR: Obtaining lock" << endl;
          unique_lock<mutex> lck(mMutex);
-         cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
-         cout << "DESTRUCTOR: Notifying all" << endl;
+         // cout << "DESTRUCTOR: Notifying all" << endl;
          mCondition.notify_all();
       }
-      cout << "DESTRUCTOR: Stopping background thread" << endl;
+      // cout << "DESTRUCTOR: Stopping background thread" << endl;
       StopBackgroundThread();
-      cout << "DESTRUCTOR: Finished!" << endl;
+      // cout << "DESTRUCTOR: Finished!" << endl;
    }
    
    bool Expired() {
@@ -55,20 +55,20 @@ public:
    }
 
    void Reset() {
-      cout << "RESET: Creating lock" << endl;
+      // cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
-      cout << "RESET: Setting mReset to true" << endl;
+      // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
       // // If the thread isn't expired, stop it.
       // if (!mExpired.load()) {
       //    StopBackgroundThread();
       // }
       // Reset the expired value and notify the thread to restart
-      cout << "RESET: setting mExpired to 0" << endl;
+      // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
-      cout << "RESET: notifying all" << endl;
+      // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      cout << "RESET: finished!" << endl;
+      // cout << "RESET: finished!" << endl;
    }
 
    // Used for performance testing, can be removed. 
@@ -88,39 +88,40 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
-         cout << "THREAD: calling sleep function" << endl;
+         // cout << "THREAD: calling sleep function" << endl;
          // Call the sleep function
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            cout << "THREAD: expired! " << (mExpired + 1) << endl;
+            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
          } 
 
-         if (mExit) { // The thread was interrupted on a destructor
-            cout << "THREAD: break!" << endl;
+         if (mExit) { // The thread was interrupted on a destructor or 
+            // the destructor was called during the sleep function
+            // cout << "THREAD: break!" << endl;
             break;
          }
 
-         cout << "THREAD: Grabbing lock" << endl;
+         // cout << "THREAD: Grabbing lock" << endl;
          unique_lock<mutex> lck(mMutex);
 
          if (!mReset) { // If the thread shouldn't reset
-            cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
+            // cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart
             //    2) Should exit
             // If it should exit, the while portion of the do while will execute,
             // if it should restart, it will automatically loop. 
             mCondition.wait(lck); 
-            cout << "THREAD: Done waiting on lock!" << endl;
+            // cout << "THREAD: Done waiting on lock!" << endl;
          }
-         cout << "THREAD: setting reset to false because we are resetting" << endl;
+         // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
-         cout << "THREAD: checking while loop" << endl;
+         // cout << "THREAD: checking while loop" << endl;
       } while (!mExit);
-      cout << "THREAD: exiting!" << endl;
+      // cout << "THREAD: exiting!" << endl;
    }
   
    void StopBackgroundThread() {
@@ -128,14 +129,14 @@ protected:
       // mTimerThread.interrupt();
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
-      cout << "STOPPER: Notifying all threads" << endl;
+      // cout << "STOPPER: Notifying all threads" << endl;
       mCondition.notify_all();
-      cout << "STOPPER: Checking if joinable and exit" << endl;
+      // cout << "STOPPER: Checking if joinable and exit" << endl;
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: joining with thread" << endl;
+         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
-      cout << "STOPPER: finished and exiting" << endl;
+      // cout << "STOPPER: finished and exiting" << endl;
    }
 
    unsigned int SleepUs(unsigned int t) {

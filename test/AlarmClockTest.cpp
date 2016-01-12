@@ -155,16 +155,16 @@ TEST_F(AlarmClockTest, secondsSimple) {
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
-   cout << "TEST: Creating pointer" << endl;
+   // cout << "TEST: Creating pointer" << endl;
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
-   cout << "TEST: expecting false for expired" << endl;
+   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(acPtr->Expired());
    this_thread::sleep_for(microseconds(10));
-   cout << "TEST: resetting pointer" << endl;
+   // cout << "TEST: resetting pointer" << endl;
    acPtr.reset();
-   cout << "TEST: expecting true for elapsed seconds" << endl;
+   // cout << "TEST: expecting true for elapsed seconds" << endl;
    EXPECT_TRUE(sw.ElapsedSec() < 2);
-   cout << "TEST: calling destructor" << endl;
+   // cout << "TEST: calling destructor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {

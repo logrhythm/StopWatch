@@ -93,7 +93,7 @@ protected:
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            cout << "THREAD: expired! " << (mExpired + 1) << endl;
+            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
          } 

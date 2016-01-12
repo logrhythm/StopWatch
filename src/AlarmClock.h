@@ -39,7 +39,7 @@ public:
    virtual ~AlarmClock() {
       {
          // cout << "DESTRUCTOR: Obtaining lock" << endl;
-         unique_lock<mutex> lck(mMutex);
+         // unique_lock<mutex> lck(mMutex);
          cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
          // cout << "DESTRUCTOR: Notifying all" << endl;

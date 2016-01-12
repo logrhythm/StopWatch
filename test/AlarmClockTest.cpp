@@ -39,7 +39,7 @@ namespace {
 
    unsigned int FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep);
-      std::this_thread::sleep_for(microseconds(10));
+      std::this_thread::sleep_for(microseconds(100));
       return 0;
    }
 }
@@ -82,19 +82,12 @@ TEST_F(AlarmClockTest, GetSecSleepTimeInMs) {
 
 TEST_F(AlarmClockTest, microsecondsLessThan500ms) {
    int us = 900;
-   cout << "TEST: Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us, FakeSleep);
-   cout << "TEST: Expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   cout << "TEST: Waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-   cout << "TEST: Expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
-   cout << "TEST: Expecting greater than" << endl;
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
-   cout << "TEST: Expecting less than" << endl;
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);
-   cout << "TEST: About to destruct" << endl;
 }
 
 TEST_F(AlarmClockTest, microsecondsGreaterThan500ms) {

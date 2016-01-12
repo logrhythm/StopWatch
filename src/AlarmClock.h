@@ -108,7 +108,7 @@ protected:
    }
 
    unsigned int SleepUs(unsigned int t) {
-      for (int i = 1; i < chrono::microseconds(t); i++) {
+      for (int i = 1; i < t; i++) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
             return 1;

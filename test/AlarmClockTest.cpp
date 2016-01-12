@@ -82,9 +82,13 @@ TEST_F(AlarmClockTest, GetSecSleepTimeInMs) {
 
 TEST_F(AlarmClockTest, microsecondsLessThan500ms) {
    int us = 900;
+   cout << "Creating Alarm Clock" << endl;
    AlarmClock<microseconds> alerter(us, FakeSleep);
+   cout << "Expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
+   cout << "Waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
+   cout << "Expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);

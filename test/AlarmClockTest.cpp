@@ -188,7 +188,7 @@ TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    WaitForAlarmClockToExpire(alerter);
    // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
-   // cout << "TEST: finished and calling destrcutor" << endl;
+   cout << "TEST: finished and calling destrcutor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {

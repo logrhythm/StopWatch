@@ -170,7 +170,7 @@ TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    // First run
    int ms = 750;
-   cout << "TEST: creating alarm clock" << endl;
+   // cout << "TEST: creating alarm clock" << endl;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
    // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
@@ -184,7 +184,7 @@ TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    alerter.Reset();
    // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   // cout << "TEST: waiting for alarm clock to expire" << endl;
+   cout << "TEST: waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
    // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());

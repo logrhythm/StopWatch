@@ -27,7 +27,7 @@ cd build
 # just some dummy version to please cmake
 # As version number we use the commit number on HEAD 
 # we do not bother with other branches for now
-GIT_VERSION=`git rev-list HEAD --count`
+#GIT_VERSION=`git rev-list HEAD --count`
 VERSION="1.$GIT_VERSION"
 
 echo "Pseudo FileIO version: $VERSION"

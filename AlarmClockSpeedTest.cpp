@@ -52,8 +52,8 @@ template <typename T> void testReset(unsigned int sleep_time, unsigned int reset
    // Calculate the overall time
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
    cout << "Results:" << endl;
-   cout << "\tReset Time: " << reset_time << " us" << endl;
    cout << "\tOverall Time: " << overall_time << " us" << endl;
+   cout << "\tReset Time: " << reset_time << " us" << endl;
    
    // The overhead is calculated differently between Craig's and my code.
    // Since I have code to time my sleep, I added a method that gets the 
@@ -62,15 +62,11 @@ template <typename T> void testReset(unsigned int sleep_time, unsigned int reset
    // functionality to measure performance, so I just added the same method
    // and have it return -1. If it does, then it just uses the amount of time
    // the Alarm Clock should have slept for a measurement. 
-   auto slept_time = alerter.SleptTime();
-   if (slept_time == -1) {
-      slept_time = alerter.SleepTimeUs();
-   }
+   int slept_time = alerter.SleepTimeUs();
 
    // Overhead is just the overall time minus the slept time. 
    auto overhead = overall_time - slept_time;
    cout << "\tOverhead Time: " << overhead << " us" << endl;
-   cout << "\tSleep Time: " << slept_time << " us" << endl;
 }
 
 int main(int, const char**) {

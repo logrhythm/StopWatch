@@ -20,7 +20,7 @@ fi
 
 # As version number we use the commit number on HEAD 
 # we do not bother with other branches for now
-GIT_VERSION=`git rev-list HEAD --count`
+# GIT_VERSION=`git rev-list HEAD --count`
 VERSION="1.$GIT_VERSION"
 
 echo "Building $PACKAGE, type: $BUILD_TYPE, version: $VERSION"
@@ -31,9 +31,6 @@ PWD=`pwd`
 CWD=$PWD/$PACKAGE
 DISTDIR=$CWD/dist/$PACKAGE
 PATH=$PATH:/usr/local/probe/bin:$PATH
-
-GIT_VERSION=`git rev-list HEAD --count`
-VERSION="1.$GIT_VERSION"
 
 rm -rf ~/rpmbuild
 rpmdev-setuptree

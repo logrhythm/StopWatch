@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <functional>
 #include <iostream>
+#include "StopWatch.h"
 using namespace std;
 
 template<typename Duration> class AlarmClock {
@@ -69,11 +70,6 @@ public:
       // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
       // cout << "RESET: finished! " << lck.owns_lock() << endl;
-   }
-
-   // Used for performance testing, can be removed. 
-   unsigned int SleptTime() {
-      return mSleptTime.load();
    }
 
    int SleepTimeUs() {
@@ -142,18 +138,23 @@ protected:
 
    unsigned int SleepUs(unsigned int t) {
       // cout << "SLEEPER: Starting for loop, t = " << t << endl;
-      chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+      unsigned int val = -1;
+      StopWatch sw;
       for (int i = 1; i < t; ++i) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
             // cout << "SLEEPER: reset or exit" << endl;
-            return 1;
-         }
+            val = 1;
+            break;
+         } //else if (i % 2 == 0) {
+            if (sw.ElapsedUs() >= t) {
+               val = 0;
+               break;
+            }
+         //}
       }
-      chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
-      mSleptTime = chrono::duration_cast<microseconds>(end - start).count();
       // cout << "SLEEPER: expired" << endl;
-      return 0;
+      return val;
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {

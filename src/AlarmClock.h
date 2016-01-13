@@ -39,7 +39,7 @@ public:
    virtual ~AlarmClock() {
       {
          // cout << "DESTRUCTOR: Obtaining lock" << endl;
-         unique_lock<mutex> lck(mMutex, try_to_lock);
+         // unique_lock<mutex> lck(mMutex, try_to_lock);
          // cout << "DESTRUCTOR: Setting mExit to true" << endl;
          mExit.store(true);
          // cout << "DESTRUCTOR: Notifying all" << endl;
@@ -56,7 +56,7 @@ public:
 
    void Reset() {
       // cout << "RESET: Creating lock" << endl;
-      unique_lock<mutex> lck(mMutex, try_to_lock);
+      // unique_lock<mutex> lck(mMutex, try_to_lock);
       // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
       // // If the thread isn't expired, stop it.

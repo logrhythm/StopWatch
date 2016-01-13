@@ -104,19 +104,19 @@ protected:
             break;
          }
 
-         // if (!mReset) { // If the thread shouldn't reset
-            // // cout << "THREAD: Grabbing lock" << endl;
-            // unique_lock<mutex> lck(mMutex);
-            // cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
-            // // Wait to get notified. It will get notified under two conditions:
-            // //    1) Should restart
-            // //    2) Should exit
-            // // If it should exit, the while portion of the do while will execute,
-            // // if it should restart, it will automatically loop. 
-            // mCondition.wait(lck); 
-            // // cout << "THREAD: Done waiting on lock!" << endl;
-            // lck.unlock();
-         // }
+         if (!mReset) { // If the thread shouldn't reset
+            // cout << "THREAD: Grabbing lock" << endl;
+            unique_lock<mutex> lck(mMutex);
+            cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
+            // Wait to get notified. It will get notified under two conditions:
+            //    1) Should restart
+            //    2) Should exit
+            // If it should exit, the while portion of the do while will execute,
+            // if it should restart, it will automatically loop. 
+            mCondition.wait(lck); 
+            // cout << "THREAD: Done waiting on lock!" << endl;
+            lck.unlock();
+         }
          cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
          cout << "THREAD: checking while loop" << endl;

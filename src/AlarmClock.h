@@ -106,7 +106,7 @@ protected:
 
          while (!mReset || !mExit) { // If the thread shouldn't reset
             // cout << "THREAD: Grabbing lock" << endl;
-            unique_lock<mutex> lck(mMutex);
+            unique_lock<mutex> lck(mMutex, defer_lock);
             cout << "THREAD: Shouldn't reset, waiting on lock" << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart

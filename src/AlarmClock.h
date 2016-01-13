@@ -132,9 +132,9 @@ protected:
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: Notifying all threads" << endl;
+         // cout << "STOPPER: Notifying all threads" << endl;
          mCondition.notify_all();
-         cout << "STOPPER: joining with thread" << endl;
+         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
       // cout << "STOPPER: finished and exiting" << endl;

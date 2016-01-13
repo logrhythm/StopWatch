@@ -32,9 +32,6 @@ CWD=$PWD/$PACKAGE
 DISTDIR=$CWD/dist/$PACKAGE
 PATH=$PATH:/usr/local/probe/bin:$PATH
 
-GIT_VERSION=`git rev-list HEAD --count`
-VERSION="1.$GIT_VERSION"
-
 rm -rf ~/rpmbuild
 rpmdev-setuptree
 cp packaging/$PACKAGE.spec ~/rpmbuild/SPECS

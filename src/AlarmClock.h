@@ -115,7 +115,7 @@ protected:
             // If it should exit, the while portion of the do while will execute,
             // if it should restart, it will automatically loop. 
             {
-               mCondition.wait(lck);
+               //mCondition.wait(lck);
             } 
             cout << "THREAD: Done waiting on lock!" << endl;
             lck.unlock();

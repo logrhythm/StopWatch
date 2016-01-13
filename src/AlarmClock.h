@@ -88,11 +88,20 @@ protected:
             //    1) Should restart
             //    2) Should exit
             // If it should exit, the while portion of the do while will execute,
-            // if it should restart, it will automatically loop. 
+            // if it should restart, it will automatically loop.
+            // wait_until is used because of a deadlock that occurs in the unit tests.
+            // It has not manifested in the performance tests. It occurs when the
+            // reset and/or exit notifies before the thread can wait on the condition. 
+            // This only occurs if the reset is called before the thread can start. 
+            // And then the subsequent exit is called right before the wait. Therefore 
+            // it will wait indefinitely as the exit code attempts to join. To work
+            // around that, the code will wait till it is notified or a certain 
+            // time period elapses. That way the deadlock will no longer occur 
+            // but it will hurt performance, if the notify occurs before the condition.  
             {
                auto now = chrono::high_resolution_clock::now();
                auto microTime = ConvertToMicroseconds(Duration(kSleepTime));
-               mCondition.wait_until(lck, now + microTime + microTime);
+               mCondition.wait_until(lck, now + microTime);
             } 
             lck.unlock();
          }

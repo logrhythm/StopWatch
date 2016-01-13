@@ -132,7 +132,7 @@ protected:
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         cout << "STOPPER: Notifying all threads " << endl;
+         // cout << "STOPPER: Notifying all threads " << endl;
          mCondition.notify_all();
          // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
@@ -141,18 +141,18 @@ protected:
    }
 
    unsigned int SleepUs(unsigned int t) {
-      cout << "SLEEPER: Starting for loop" << endl;
+      // cout << "SLEEPER: Starting for loop, t = " << t << endl;
       chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
-      for (int i = 1; i < t; i++) {
+      for (int i = 1; i < t; ++i) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
-            cout << "SLEEPER: reset or exit" << endl;
+            // cout << "SLEEPER: reset or exit" << endl;
             return 1;
          }
       }
       chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
       mSleptTime = chrono::duration_cast<microseconds>(end - start).count();
-      cout << "SLEEPER: expired" << endl;
+      // cout << "SLEEPER: expired" << endl;
       return 0;
    }
    

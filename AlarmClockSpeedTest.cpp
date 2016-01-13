@@ -6,7 +6,7 @@
 
 #include <ctime>
 #include <iostream>
-#include <AlarmClock.h.old> // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
+#include <AlarmClock.h> // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
 #include <chrono>
 #include <thread>
 using namespace std;
@@ -20,16 +20,16 @@ template<typename T> void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
    while(!alerter.Expired());
 }
 
-template <typename T> void testReset(unsigned int sleep_time) {
+template <typename T> void testReset(unsigned int sleep_time, unsigned int reset_portion=2) {
    // Start overall measurements
+   // cout << "Creating Alarm Clock" << endl;
    high_resolution_clock::time_point start_overall = high_resolution_clock::now();
-   cout << "Creating Alarm Clock" << endl;
    AlarmClock<T> alerter(sleep_time);
-   cout << "Starting clock and resetting" << endl;
+   // cout << "Starting clock and resetting" << endl;
 
    // Sleep before restart, this can be changed to see the overhead for
    // different reset periods
-   std::this_thread::sleep_for(microseconds(sleep_time/2));
+   std::this_thread::sleep_for(microseconds(sleep_time/reset_portion));
 
    // Start the reset measurement
    high_resolution_clock::time_point start = high_resolution_clock::now();
@@ -42,7 +42,7 @@ template <typename T> void testReset(unsigned int sleep_time) {
    // Calculate the reset time
    auto reset_time = duration_cast<microseconds>(end - start).count();
    
-   cout << "Waiting for the clock to expire" << endl;
+   // cout << "Waiting for the clock to expire" << endl;
    // Make sure the clock expires correctly after reset
    WaitForAlarmClockToExpire(alerter);
 
@@ -70,6 +70,7 @@ template <typename T> void testReset(unsigned int sleep_time) {
    // Overhead is just the overall time minus the slept time. 
    auto overhead = overall_time - slept_time;
    cout << "\tOverhead Time: " << overhead << " us" << endl;
+   cout << "\tSleep Time: " << slept_time << " us" << endl;
 }
 
 int main(int, const char**) {
@@ -79,11 +80,13 @@ int main(int, const char**) {
    unsigned int ms = 3;
    unsigned int s = 1;
 
-   cout << "---------------------------- Testing " << us << " microseconds ----------------------------" << endl;
-   testReset<microseconds>(us);
-   cout << "---------------------------- Testing " << ms << " milliseconds ----------------------------" << endl;
-   testReset<milliseconds>(ms);
-   cout << "---------------------------- Testing " << s << " seconds ----------------------------" << endl;
-   testReset<seconds>(s);
-
+   for (int reset_time = 2; reset_time < 10; ++reset_time) {
+      cout << "Reset @ 1/" << reset_time << endl;
+      cout << "---------------------------- Testing " << us << " microseconds ----------------------------" << endl;
+      testReset<microseconds>(us, reset_time);
+      cout << "---------------------------- Testing " << ms << " milliseconds ----------------------------" << endl;
+      testReset<milliseconds>(ms, reset_time);
+      cout << "---------------------------- Testing " << s << " seconds ----------------------------" << endl;
+      testReset<seconds>(s, reset_time);
+   }
 }

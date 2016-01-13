@@ -41,7 +41,7 @@ namespace {
 
    unsigned int FakeSleep(unsigned int usToSleep) {
       AlarmClockTest::mFakeSleepUs.store(usToSleep);
-      std::this_thread::sleep_for(microseconds(1000));
+      std::this_thread::sleep_for(microseconds(10));
       return 0;
    }
 }

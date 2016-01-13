@@ -104,7 +104,7 @@ protected:
             break;
          }
 
-         while (!mReset || !mExit) { // If the thread shouldn't reset
+         while (!mReset && !mExit) { // If the thread shouldn't reset or exit
             // cout << "THREAD: Grabbing lock" << endl;
             unique_lock<mutex> lck(mMutex, defer_lock);
             cout << "THREAD: Shouldn't reset, waiting on lock, " << bool(lck.owns_lock()) << endl;

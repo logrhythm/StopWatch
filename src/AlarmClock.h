@@ -68,7 +68,7 @@ public:
       mExpired.store(0);
       // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      // cout << "RESET: finished!" << endl;
+      cout << "RESET: finished! " << lck.owns_lock() << endl;
    }
 
    // Used for performance testing, can be removed. 

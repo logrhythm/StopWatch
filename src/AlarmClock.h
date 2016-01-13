@@ -40,7 +40,7 @@ public:
       {
          // cout << "DESTRUCTOR: Obtaining lock" << endl;
          unique_lock<mutex> lck(mMutex);
-         // cout << "DESTRUCTOR: Setting mExit to true" << endl;
+         cout << "DESTRUCTOR: Setting mExit to true, " << lck.owns_lock() << endl;
          mExit.store(true);
          // cout << "DESTRUCTOR: Notifying all" << endl;
          lck.unlock();

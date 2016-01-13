@@ -44,9 +44,9 @@ public:
       // cout << "DESTRUCTOR: Notifying all" << endl;
       lck.unlock();
       mCondition.notify_all();
-      cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
+      // cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
       StopBackgroundThread();
-      cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
+      // cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
    }
    
    bool Expired() {
@@ -106,7 +106,7 @@ protected:
 
          while (!mReset && !mExit) { // If the thread shouldn't reset or exit
             // cout << "THREAD: Grabbing lock" << endl;
-            unique_lock<mutex> lck(mMutex, defer_lock);
+            unique_lock<mutex> lck(mMutex);
             // cout << "THREAD: Shouldn't reset, waiting on lock, " << lck.owns_lock() << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart

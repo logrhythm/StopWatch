@@ -37,18 +37,16 @@ public:
    }
 
    virtual ~AlarmClock() {
-      {
-         // cout << "DESTRUCTOR: Obtaining lock" << endl;
-         unique_lock<mutex> lck(mMutex);
-         // cout << "DESTRUCTOR: Setting mExit to true, " << lck.owns_lock() << endl;
-         mExit.store(true);
-         // cout << "DESTRUCTOR: Notifying all" << endl;
-         lck.unlock();
-         mCondition.notify_all();
-      }
-      // cout << "DESTRUCTOR: Stopping background thread" << endl;
+      // cout << "DESTRUCTOR: Obtaining lock" << endl;
+      unique_lock<mutex> lck(mMutex);
+      // cout << "DESTRUCTOR: Setting mExit to true" << endl;
+      mExit.store(true);
+      // cout << "DESTRUCTOR: Notifying all" << endl;
+      lck.unlock();
+      mCondition.notify_all();
+      cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
       StopBackgroundThread();
-      // cout << "DESTRUCTOR: Finished!" << endl;
+      cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
    }
    
    bool Expired() {

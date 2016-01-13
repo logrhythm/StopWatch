@@ -97,7 +97,7 @@ protected:
             // it will wait indefinitely as the exit code attempts to join. To work
             // around that, the code will wait till it is notified or a certain 
             // time period elapses. That way the deadlock will no longer occur 
-            // but it will hurt performance, if the notify occurs before the condition.  
+            // but it will hurt performance if the notify occurs before the condition.  
             {
                auto now = chrono::high_resolution_clock::now();
                auto microTime = ConvertToMicroseconds(Duration(kSleepTime));

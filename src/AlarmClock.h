@@ -116,8 +116,8 @@ protected:
             {
                mCondition.wait(lck);
             } 
-            cout << "THREAD: Done waiting on lock!" << endl;
-            lck.unlock();
+            cout << "THREAD: Done waiting on lock! " << lck.owns_lock() << endl;
+            // lck.unlock();
          }
          cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);

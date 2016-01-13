@@ -88,12 +88,12 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
-         cout << "THREAD: calling sleep function" << endl;
+         // cout << "THREAD: calling sleep function" << endl;
          // Call the sleep function
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            cout << "THREAD: expired! " << (mExpired + 1) << endl;
+            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
          } 
@@ -107,7 +107,7 @@ protected:
          while (!mReset && !mExit) { // If the thread shouldn't reset or exit
             // cout << "THREAD: Grabbing lock" << endl;
             unique_lock<mutex> lck(mMutex, defer_lock);
-            cout << "THREAD: Shouldn't reset, waiting on lock, " << bool(lck.owns_lock()) << endl;
+            cout << "THREAD: Shouldn't reset, waiting on lock, " << lck.owns_lock() << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart
             //    2) Should exit
@@ -116,12 +116,12 @@ protected:
             {
                mCondition.wait(lck);
             } 
-            cout << "THREAD: Done waiting on lock! " << lck.owns_lock() << endl;
+            // cout << "THREAD: Done waiting on lock! " << lck.owns_lock() << endl;
             // lck.unlock();
          }
-         cout << "THREAD: setting reset to false because we are resetting" << endl;
+         // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
-         cout << "THREAD: checking while loop" << endl;
+         // cout << "THREAD: checking while loop" << endl;
       } while (!mExit);
       // cout << "THREAD: exiting!" << endl;
    }

@@ -67,6 +67,7 @@ public:
       // Reset the expired value and notify the thread to restart
       // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
+      lck.unlock();
       // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
       cout << "RESET: finished! " << lck.owns_lock() << endl;
@@ -115,10 +116,10 @@ protected:
             // If it should exit, the while portion of the do while will execute,
             // if it should restart, it will automatically loop. 
             {
-               //mCondition.wait(lck);
+               mCondition.wait(lck);
             } 
             cout << "THREAD: Done waiting on lock!" << endl;
-            //lck.unlock();
+            lck.unlock();
          }
          cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);

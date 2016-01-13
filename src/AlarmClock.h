@@ -116,7 +116,7 @@ protected:
             {
                mCondition.wait(lck);
             } 
-            // cout << "THREAD: Done waiting on lock!" << endl;
+            cout << "THREAD: Done waiting on lock!" << endl;
             lck.unlock();
          }
          cout << "THREAD: setting reset to false because we are resetting" << endl;
@@ -128,12 +128,12 @@ protected:
   
    void StopBackgroundThread() {
       // Change to setting the interrupt to atomic. It should then notify?
-      // cout << "STOPPER: Notifying all threads" << endl;
-      mCondition.notify_all();
       // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
+         // cout << "STOPPER: Notifying all threads" << endl;
+         mCondition.notify_all();
          // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }

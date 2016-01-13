@@ -38,16 +38,11 @@ public:
    }
 
    virtual ~AlarmClock() {
-      // cout << "DESTRUCTOR: Obtaining lock" << endl;
       unique_lock<mutex> lck(mMutex);
-      // cout << "DESTRUCTOR: Setting mExit to true" << endl;
       mExit.store(true);
-      // cout << "DESTRUCTOR: Notifying all" << endl;
       lck.unlock();
       mCondition.notify_all();
-      // cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
       StopBackgroundThread();
-      // cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
    }
    
    bool Expired() {
@@ -55,21 +50,11 @@ public:
    }
 
    void Reset() {
-      // cout << "RESET: Creating lock" << endl;
       unique_lock<mutex> lck(mMutex);
-      // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
-      // // If the thread isn't expired, stop it.
-      // if (!mExpired.load()) {
-      //    StopBackgroundThread();
-      // }
-      // Reset the expired value and notify the thread to restart
-      // cout << "RESET: setting mExpired to 0" << endl;
       mExpired.store(0);
       lck.unlock();
-      // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      // cout << "RESET: finished! " << lck.owns_lock() << endl;
    }
 
    int SleepTimeUs() {
@@ -84,76 +69,61 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
-         // cout << "THREAD: calling sleep function" << endl;
          // Call the sleep function
          unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
 
          if (retVal == 0) {
-            // cout << "THREAD: expired! " << (mExpired + 1) << endl;
             // Expired normally, should increment mExpired
             mExpired++;
          } 
 
          if (mExit) { // The thread was interrupted on a destructor or 
             // the destructor was called during the sleep function
-            // cout << "THREAD: break!" << endl;
             break;
          }
 
          while (!mReset && !mExit) { // If the thread shouldn't reset or exit
-            // cout << "THREAD: Grabbing lock" << endl;
             unique_lock<mutex> lck(mMutex);
-            // cout << "THREAD: Shouldn't reset, waiting on lock, " << lck.owns_lock() << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart
             //    2) Should exit
             // If it should exit, the while portion of the do while will execute,
             // if it should restart, it will automatically loop. 
             {
-               mCondition.wait(lck);
+               auto now = chrono::high_resolution_clock::now();
+               auto microTime = ConvertToMicroseconds(Duration(kSleepTime));
+               mCondition.wait_until(lck, now + microTime + microTime);
             } 
-            // cout << "THREAD: Done waiting on lock! " << lck.owns_lock() << endl;
-            // lck.unlock();
+            lck.unlock();
          }
-         // cout << "THREAD: setting reset to false because we are resetting" << endl;
          mReset.store(false);
-         // cout << "THREAD: checking while loop" << endl;
       } while (!mExit);
-      // cout << "THREAD: exiting!" << endl;
    }
   
    void StopBackgroundThread() {
       // Change to setting the interrupt to atomic. It should then notify?
-      // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         // cout << "STOPPER: Notifying all threads " << endl;
          mCondition.notify_all();
-         // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();
       }
-      // cout << "STOPPER: finished and exiting" << endl;
    }
 
    unsigned int SleepUs(unsigned int t) {
-      // cout << "SLEEPER: Starting for loop, t = " << t << endl;
       unsigned int val = -1;
       StopWatch sw;
       for (int i = 1; i < t; ++i) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
-            // cout << "SLEEPER: reset or exit" << endl;
             val = 1;
             break;
-         } //else if (i % 2 == 0) {
-            if (sw.ElapsedUs() >= t) {
+         }
+         if (sw.ElapsedUs() >= t) {
                val = 0;
                break;
             }
-         //}
       }
-      // cout << "SLEEPER: expired" << endl;
       return val;
    }
    

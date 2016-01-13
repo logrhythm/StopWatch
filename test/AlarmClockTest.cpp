@@ -24,9 +24,7 @@ namespace {
 
    template<typename T>
    void WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
-      // cout << "WAIT: Entering while" << endl;
       while (!alerter.Expired());
-      // cout << "WAIT: Exiting" << endl;
    }
 
    template<typename Duration>
@@ -153,44 +151,29 @@ TEST_F(AlarmClockTest, secondsSimple) {
    EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
 }
 
-// Not working, not sure what it's supposed to be testing?
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
-   // cout << "TEST: Creating pointer" << endl;
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
-   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(acPtr->Expired());
    this_thread::sleep_for(microseconds(10));
-   // cout << "TEST: resetting pointer" << endl;
    acPtr.reset();
-   // cout << "TEST: expecting true for elapsed seconds" << endl;
    EXPECT_TRUE(sw.ElapsedSec() < 2);
-   // cout << "TEST: calling destructor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetAfterExpired) {
    // First run
    int ms = 750;
-   // cout << "TEST: creating alarm clock" << endl;
    AlarmClock<milliseconds> alerter(ms, FakeSleep);
-   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   // cout << "TEST: waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-   // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
    
    // Reset after AlarmClock has expired
-   // cout << "TEST: resetting alarm clock" << endl;
    alerter.Reset();
-   // cout << "TEST: expecting false for expired" << endl;
    EXPECT_FALSE(alerter.Expired());
-   // cout << "TEST: waiting for alarm clock to expire" << endl;
    WaitForAlarmClockToExpire(alerter);
-   // cout << "TEST: expecting true for expired" << endl;
    EXPECT_TRUE(alerter.Expired());
-   // cout << "TEST: finished and calling destrcutor" << endl;
 }
 
 TEST_F(AlarmClockTest, milliseconds_ResetBeforeExpired) {

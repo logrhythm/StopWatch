@@ -56,7 +56,7 @@ public:
 
    void Reset() {
       // cout << "RESET: Creating lock" << endl;
-      unique_lock<mutex> lck(mMutex);
+      // unique_lock<mutex> lck(mMutex);
       // cout << "RESET: Setting mReset to true" << endl;
       mReset.store(true);
       // // If the thread isn't expired, stop it.

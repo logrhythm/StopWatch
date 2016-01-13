@@ -45,7 +45,7 @@ public:
       lck.unlock();
       mCondition.notify_all();
       // cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
-      StopBackgroundThread();
+      StopBackgroundThread(lck);
       // cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
    }
    
@@ -126,13 +126,13 @@ protected:
       // cout << "THREAD: exiting!" << endl;
    }
   
-   void StopBackgroundThread() {
+   void StopBackgroundThread(unique_lock lck) {
       // Change to setting the interrupt to atomic. It should then notify?
       // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         // cout << "STOPPER: Notifying all threads" << endl;
+         cout << "STOPPER: Notifying all threads " << lck.owns_lock() << endl;
          mCondition.notify_all();
          // cout << "STOPPER: joining with thread" << endl;
          mTimerThread.join();

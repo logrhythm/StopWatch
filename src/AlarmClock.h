@@ -44,9 +44,9 @@ public:
       // cout << "DESTRUCTOR: Notifying all" << endl;
       lck.unlock();
       mCondition.notify_all();
-      cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
+      // cout << "DESTRUCTOR: Stopping background thread, " << lck.owns_lock() << endl;
       StopBackgroundThread();
-      cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
+      // cout << "DESTRUCTOR: Finished! " << lck.owns_lock() << endl;
    }
    
    bool Expired() {
@@ -68,7 +68,7 @@ public:
       lck.unlock();
       // cout << "RESET: notifying all" << endl;
       mCondition.notify_all(); // Needed in the case it is already waiting
-      cout << "RESET: finished! " << lck.owns_lock() << endl;
+      // cout << "RESET: finished! " << lck.owns_lock() << endl;
    }
 
    // Used for performance testing, can be removed. 
@@ -100,14 +100,14 @@ protected:
 
          if (mExit) { // The thread was interrupted on a destructor or 
             // the destructor was called during the sleep function
-            cout << "THREAD: break!" << endl;
+            // cout << "THREAD: break!" << endl;
             break;
          }
 
          while (!mReset && !mExit) { // If the thread shouldn't reset or exit
             // cout << "THREAD: Grabbing lock" << endl;
             unique_lock<mutex> lck(mMutex, defer_lock);
-            cout << "THREAD: Shouldn't reset, waiting on lock, " << lck.owns_lock() << endl;
+            // cout << "THREAD: Shouldn't reset, waiting on lock, " << lck.owns_lock() << endl;
             // Wait to get notified. It will get notified under two conditions:
             //    1) Should restart
             //    2) Should exit

@@ -126,7 +126,7 @@ protected:
       // cout << "THREAD: exiting!" << endl;
    }
   
-   void StopBackgroundThread(unique_lock lck) {
+   void StopBackgroundThread(unique_lock<mutex> lck) {
       // Change to setting the interrupt to atomic. It should then notify?
       // cout << "STOPPER: Checking if joinable and exit" << endl;
       // Check to see if the thread is joinable and only join if it is supposed

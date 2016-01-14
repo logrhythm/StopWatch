@@ -74,7 +74,7 @@ protected:
 
          if (retVal == 0) {
             // Expired normally, should increment mExpired
-            mExpired++;
+            ++mExpired;
          } 
 
          if (mExit) { // The thread was interrupted on a destructor or 

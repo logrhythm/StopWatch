@@ -15,6 +15,7 @@
 #include <functional>
 #include <iostream>
 #include "StopWatch.h"
+#include <cassert>
 using namespace std;
 
 template<typename Duration> class AlarmClock {
@@ -23,10 +24,11 @@ public:
    typedef chrono::milliseconds milliseconds;
    typedef chrono::seconds seconds;
 
-   AlarmClock(unsigned int sleepDuration, function<unsigned int (unsigned int)> funcPtr = nullptr) : mExpired(0),
+   AlarmClock(unsigned int sleepDuration, function<void (unsigned int)> funcPtr = nullptr) : mExpired(false),
       mSleptTime(0),
       mExit(false),
       mReset(false),
+      mConstructorThreadId(this_thread::get_id()),
       kSleepTime(sleepDuration),
       kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
@@ -38,10 +40,7 @@ public:
    }
 
    virtual ~AlarmClock() {
-      unique_lock<mutex> lck(mMutex);
       mExit.store(true);
-      lck.unlock();
-      mCondition.notify_all();
       StopBackgroundThread();
    }
    
@@ -49,12 +48,14 @@ public:
       return mExpired.load();
    }
 
+   thread::id GetThreadId() {
+      return mConstructorThreadId;
+   }
+
    void Reset() {
-      unique_lock<mutex> lck(mMutex);
+      assert(mConstructorThreadId == GetThreadID() && "Illegal to call 'Reset' from thread other than originator");
       mReset.store(true);
-      mExpired.store(0);
-      lck.unlock();
-      mCondition.notify_all(); // Needed in the case it is already waiting
+      mExpired.store(false);
    }
 
    int SleepTimeUs() {
@@ -70,70 +71,51 @@ protected:
    void AlarmClockInterruptableThread() {
       do {
          // Call the sleep function
-         unsigned int retVal = mSleepFunction(kSleepTimeUsCount);
-
-         if (retVal == 0) {
-            // Expired normally, should increment mExpired
-            ++mExpired;
-         } 
-
+         // cout << "THREAD: Calling sleep function" << endl;
+         mSleepFunction(kSleepTimeUsCount);
+         if (!mExit && !mReset) {
+            mExpired.store(true);
+         }
+         // cout << "THREAD: atomic values, mExit = " << mExit << ", mExpired = " << mExpired << ", mReset = " << mReset << endl;
          if (mExit) { // The thread was interrupted on a destructor or 
             // the destructor was called during the sleep function
+            // cout << "THREAD: mExit is " << mExit << " should exit." << endl;
             break;
          }
 
-         while (!mReset && !mExit) { // If the thread shouldn't reset or exit
-            unique_lock<mutex> lck(mMutex);
-            // Wait to get notified. It will get notified under two conditions:
-            //    1) Should restart
-            //    2) Should exit
-            // If it should exit, the while portion of the do while will execute,
-            // if it should restart, it will automatically loop.
-            // wait_until is used because of a deadlock that occurs in the unit tests.
-            // It has not manifested in the performance tests. It occurs when the
-            // reset and/or exit notifies before the thread can wait on the condition. 
-            // This only occurs if the reset is called before the thread can start. 
-            // And then the subsequent exit is called right before the wait. Therefore 
-            // it will wait indefinitely as the exit code attempts to join. To work
-            // around that, the code will wait till it is notified or a certain 
-            // time period elapses. That way the deadlock will no longer occur 
-            // but it will hurt performance if the notify occurs before the condition.  
-            {
-               auto now = chrono::high_resolution_clock::now();
-               auto microTime = ConvertToMicroseconds(Duration(kSleepTime));
-               mCondition.wait_until(lck, now + microTime);
-            } 
-            lck.unlock();
+         if (mExpired) {
+            // cout << "THREAD: mExpired is " << mExpired << " should wait for reset or exit." << endl;
+            while (!mReset && !mExit) {
+               this_thread::sleep_for(chrono::microseconds(1));
+            }
+            // cout << "THREAD: Finished waiting for reset or exit" << endl;
          }
+         // cout << "THREAD: resetting reset value" << endl;
          mReset.store(false);
       } while (!mExit);
+      // cout << "THREAD: done! exiting" << endl;
    }
   
    void StopBackgroundThread() {
-      // Change to setting the interrupt to atomic. It should then notify?
       // Check to see if the thread is joinable and only join if it is supposed
       // to exit.
       if (mTimerThread.joinable() && mExit) {
-         mCondition.notify_all();
          mTimerThread.join();
       }
    }
 
-   unsigned int SleepUs(unsigned int t) {
-      unsigned int val = -1;
+   void SleepUs(unsigned int t) {
       StopWatch sw;
       for (int i = 1; i < t; ++i) {
          this_thread::sleep_for(chrono::microseconds(1));
          if (mReset || mExit) {
-            val = 1;
-            break;
+            return;
          }
          if (sw.ElapsedUs() >= t) {
-               val = 0;
-               break;
-            }
+            mExpired.store(true);
+            return;
+         }
       }
-      return val;
    }
    
    unsigned int ConvertToMillisecondsCount(Duration t) {
@@ -150,14 +132,15 @@ protected:
    
 private:
 
-   atomic<unsigned int> mExpired;
+   atomic<bool> mExpired;
    atomic<unsigned int> mSleptTime;
    atomic<bool> mExit;
    atomic<bool> mReset;
+   const thread::id mConstructorThreadId;
    const int kSleepTime;
    const unsigned int kSleepTimeMsCount;
    const unsigned int kSleepTimeUsCount;
-   function<unsigned int (unsigned int)> mSleepFunction;
+   function<void (unsigned int)> mSleepFunction;
    thread mTimerThread;
    mutex mMutex;
    condition_variable mCondition;

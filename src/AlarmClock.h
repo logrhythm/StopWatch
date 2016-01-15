@@ -2,18 +2,18 @@
  * File:   AlarmClock.h
  * Author: Amanda Carbonari
  * Created: January 5, 2016 4:35pm
- * Description: Utilizes the boost library to create a singleton interruptable thread
- *   that "communicates" with the main thread via a mutex, locks, and condition variables.
+ * Description: Uses an "interruptable" std::thread, that checks every
+ *    microsecond to see if any of the two interrupt atomics have been set to
+ *    true (mReset, mExit). If they are it will stop it's sleep and then check
+ *    to see if it was a reset or exit. If it was neither (expired) it will busy
+ *    wait until mReset is set to true and it can start sleeping again.  
  */
 
 #pragma once
 #include <chrono>
 #include <thread>
-#include <mutex>
 #include <atomic>
-#include <condition_variable>
 #include <functional>
-#include <iostream>
 #include "StopWatch.h"
 #include <cassert>
 using namespace std;
@@ -24,6 +24,7 @@ public:
    typedef chrono::milliseconds milliseconds;
    typedef chrono::seconds seconds;
 
+   // The sleep function is passed in for the unit tests. 
    AlarmClock(unsigned int sleepDuration, function<void (unsigned int)> funcPtr = nullptr) : mExpired(false),
       mSleptTime(0),
       mExit(false),
@@ -34,7 +35,10 @@ public:
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
       mSleepFunction(funcPtr) {
          if (mSleepFunction == nullptr) {
-            mSleepFunction = bind(&AlarmClock::SleepUs, this, placeholders::_1);
+            mSleepFunction = [&](unsigned int sleepTime) 
+            { 
+               SleepUs(sleepTime); 
+            }; 
          }
          mTimerThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
    }
@@ -70,35 +74,28 @@ protected:
 
    void AlarmClockInterruptableThread() {
       do {
-         // Call the sleep function
-         // cout << "THREAD: Calling sleep function" << endl;
          mSleepFunction(kSleepTimeUsCount);
+         // This is required because the unit tests use their own "fake sleep"
+         // pass it into the constructor. By doing that, the unit tests will
+         // fail if the mExpired.store(true) is in the sleep function instead
+         // of the thread function. aka Due to unit test limitation.
          if (!mExit && !mReset) {
             mExpired.store(true);
          }
-         // cout << "THREAD: atomic values, mExit = " << mExit << ", mExpired = " << mExpired << ", mReset = " << mReset << endl;
-         if (mExit) { // The thread was interrupted on a destructor or 
-            // the destructor was called during the sleep function
-            // cout << "THREAD: mExit is " << mExit << " should exit." << endl;
+         if (mExit) {  
             break;
          }
 
          if (mExpired) {
-            // cout << "THREAD: mExpired is " << mExpired << " should wait for reset or exit." << endl;
             while (!mReset && !mExit) {
                this_thread::sleep_for(chrono::microseconds(1));
             }
-            // cout << "THREAD: Finished waiting for reset or exit" << endl;
          }
-         // cout << "THREAD: resetting reset value" << endl;
          mReset.store(false);
       } while (!mExit);
-      // cout << "THREAD: done! exiting" << endl;
    }
   
    void StopBackgroundThread() {
-      // Check to see if the thread is joinable and only join if it is supposed
-      // to exit.
       if (mTimerThread.joinable() && mExit) {
          mTimerThread.join();
       }
@@ -108,11 +105,11 @@ protected:
       StopWatch sw;
       for (int i = 1; i < t; ++i) {
          this_thread::sleep_for(chrono::microseconds(1));
+         auto elapsed = sw.ElapsedUs();
          if (mReset || mExit) {
             return;
          }
-         if (sw.ElapsedUs() >= t) {
-            mExpired.store(true);
+         if (elapsed >= t) {
             return;
          }
       }
@@ -142,6 +139,4 @@ private:
    const unsigned int kSleepTimeUsCount;
    function<void (unsigned int)> mSleepFunction;
    thread mTimerThread;
-   mutex mMutex;
-   condition_variable mCondition;
 };

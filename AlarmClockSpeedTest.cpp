@@ -16,8 +16,8 @@ typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::seconds seconds;
 
 
-template<typename T> int WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
-   int i = 1;
+template<typename T> size_t WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
+   size_t i = 1;
    for(; !alerter.Expired(); ++i);
    return i;
 }
@@ -25,11 +25,11 @@ template<typename T> int WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
 void getSleepOverhead(unsigned int sleep_time) {
    high_resolution_clock::time_point start_overall = high_resolution_clock::now();
    AlarmClock<microseconds> alerter(sleep_time);
-   int forLoopVal = WaitForAlarmClockToExpire(alerter);
+   auto forLoopVal = WaitForAlarmClockToExpire(alerter);
    high_resolution_clock::time_point end_overall = high_resolution_clock::now();
 
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
-   int slept_time = alerter.SleepTimeUs();
+   auto slept_time = alerter.SleepTimeUs();
    auto overhead = overall_time - slept_time;
    cout << "Results: " << endl;
    cout << "\tOverall Time: " << overall_time << " us" << endl;
@@ -70,7 +70,7 @@ void testReset(unsigned int sleep_time, int reset_portion=-1) {
 
    // Calculate the overall time
    auto overall_time = duration_cast<microseconds>(end_overall - start_overall).count();
-   int slept_time = alerter.SleepTimeUs();
+   auto slept_time = alerter.SleepTimeUs();
 
    // Overhead is just the overall time minus the slept time and wait period.
    auto overhead = overall_time - slept_time - wait_amount;

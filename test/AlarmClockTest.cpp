@@ -148,7 +148,7 @@ TEST_F(AlarmClockTest, secondsSimple) {
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
-   std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec, FakeSleep));
+   std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec));
    EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), acPtr->SleepTimeUs());
    acPtr.reset();
    EXPECT_TRUE(sw.ElapsedSec() < 2);

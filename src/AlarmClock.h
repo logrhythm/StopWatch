@@ -73,12 +73,11 @@ protected:
 
    bool ExpireAtUs(unsigned int timeUsTillExpire) {
       StopWatch sw;
-
       // The loop introduces a 50 microsecond overhead because it accesses
       // the two atomics. Therefore stopwatch is needed to ensure the alarm
       // does not over sleep. 
       while (sw.ElapsedUs() < timeUsTillExpire) {
-         this_thread::sleep_for(microseconds(1));
+         this_thread::sleep_for(microseconds(25));
          if (mReset || mExit) {
             return false;
          }

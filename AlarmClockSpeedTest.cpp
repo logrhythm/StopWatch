@@ -6,7 +6,7 @@
 
 #include <ctime>
 #include <iostream>
-#include <AlarmClock.h> // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
+#include "AlarmClock.h" // To test other implementations, change this to #include<header file> or #inlcude<AlarmClock.h.old> for example
 #include <chrono>
 #include <thread>
 using namespace std;
@@ -15,6 +15,8 @@ typedef std::chrono::microseconds microseconds;
 typedef std::chrono::milliseconds milliseconds;
 typedef std::chrono::seconds seconds;
 
+// Forward declaration of every type of templated class
+template class AlarmClock<microseconds>;
 
 template<typename T> size_t WaitForAlarmClockToExpire(AlarmClock<T>& alerter) {
    size_t i = 1;
@@ -94,7 +96,7 @@ int main(int, const char**) {
    for (int reset_time = 2; reset_time < 10; ++reset_time) {
       cout << "Reset @ 1/" << reset_time << endl;
       cout << "---------------------------- Testing " << us.count() << " microseconds ----------------------------" << endl;
-      testReset(us.count(), reset_time);
+      testReset(us.count(), 2);
       cout << "---------------------------- Testing " << ms.count() << " milliseconds ----------------------------" << endl;
       testReset(microseconds(ms).count(), reset_time);
       cout << "---------------------------- Testing " << s.count() << " seconds ----------------------------" << endl;

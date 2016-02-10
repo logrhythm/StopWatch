@@ -1,37 +1,47 @@
 /* 
  * File:   AlarmClock.h
- * Author: Craig Cogdill
- * Created: October 15, 2015 10:45am
+ * Author: Amanda Carbonari
+ * Created: January 5, 2016 4:35pm
+ * Description: Uses an "interruptable" std::thread, that checks every
+ *    microsecond to see if any of the two interrupt atomics have been set to
+ *    true (mReset, mExit). If they are it will stop it's sleep and then check
+ *    to see if it was a reset or exit. If it was expired and not reset or exit it will sleep
+ *    until mReset (or exit) is set to true and it can start sleeping again.  
  */
 
 #pragma once
 #include <chrono>
 #include <thread>
 #include <atomic>
-#include <future>
 #include <functional>
+#include <iostream>
 #include "StopWatch.h"
-
+using namespace std;
 
 template<typename Duration> class AlarmClock {
 public:
-   typedef std::chrono::microseconds microseconds;
-   typedef std::chrono::milliseconds milliseconds;
-   typedef std::chrono::seconds seconds;
-   
-   AlarmClock(unsigned int sleepDuration, std::function<void(unsigned int)> funcPtr = nullptr) : mExpired(false),
-      kSleepTime(sleepDuration),
-      kSleepTimeMsCount(ConvertToMillisecondsCount(Duration(sleepDuration))),
+   typedef chrono::microseconds microseconds;
+
+   // The sleep function is passed in for the unit tests. 
+   AlarmClock(unsigned int sleepDuration, function<bool (unsigned int)> funcPtr = nullptr) : mExpired(false),
+      mExit(false),
+      mReset(false),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
-      mSleepFunction(funcPtr) {
-         if (mSleepFunction == nullptr) {
-            mSleepFunction = std::bind(&AlarmClock::SleepUs, this, std::placeholders::_1);
+      mAlarmExpiredFunction(funcPtr) {
+         if (mAlarmExpiredFunction == nullptr) {
+            mAlarmExpiredFunction = [&](unsigned int sleepTime) -> bool
+            { 
+               return ExpireAtUs(sleepTime); 
+            }; 
          }
-         mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread,this);
-   }
-   
+         mAlarmThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
+      }
+
    virtual ~AlarmClock() {
-      StopBackgroundThread();
+      mExit.store(true, memory_order_relaxed);
+      if (mAlarmThread.joinable()) {
+         mAlarmThread.join();
+      }
    }
    
    bool Expired() {
@@ -39,104 +49,53 @@ public:
    }
 
    void Reset() {
-      if (!mExpired.load()) {
-         StopBackgroundThread();
-      }
-      mExpired.store(false); 
-      mExited = std::async(std::launch::async, &AlarmClock::AlarmClockThread, this);
+      mReset.store(true, memory_order_relaxed);
+      mExpired.store(false);
    }
 
    int SleepTimeUs() {
       return kSleepTimeUsCount;
    }
-   
-   int SleepTimeMs() {
-      return kSleepTimeMsCount;
-   }
 
 protected:
 
-   void AlarmClockThread() {
-      SleepTimeIsBelow500ms() ? AlarmClock::SleepForFullAmount() : AlarmClock::SleepInIntervals();
-   }
-  
-   void StopBackgroundThread() {
-      mExpired.store(true);
-      mExited.wait();
-   }
-
-   bool SleepTimeIsBelow500ms() {
-      return Duration(kSleepTime) <= microseconds(kSmallestIntervalInUS);
-   }
-
-   void SleepForFullAmount() {
-      mSleepFunction(kSleepTimeUsCount);
-      mExpired.store(true);
-   }
-
-   void SleepUs(unsigned int t) {
-      std::this_thread::sleep_for(microseconds(t));
-   }
-   
-   // If 500ms is NOT an even divisor of the amount of sleep
-   //    time given, should sleep for every multiple of 500ms
-   //    that divides, then check the remaining time and just
-   //    sleep for only that last bit.
-   //
-   // If 500ms IS an even divisor of the sleep time, sleep for 
-   //    all but one multiple of 500ms. There is overhead induced
-   //    by the while loop, so if the full amount of time is slept,
-   //    the precision of the alarm clock will suffer.
-   size_t GetNumberOfSleepIntervals() {
-      return (kSleepTimeMsCount % kSmallestIntervalInMS == 0) ?
-             ((kSleepTimeMsCount/kSmallestIntervalInMS) - 1) :
-             (kSleepTimeMsCount/kSmallestIntervalInMS);
-   }
-  
-   void SleepForRemainder(const unsigned int& currentSleptFor) {
-      if (currentSleptFor < kSleepTimeUsCount) {
-         mSleepFunction(kSleepTimeUsCount - currentSleptFor);
+   void AlarmClockInterruptableThread() {
+      while(!mExit) {
+         if(mAlarmExpiredFunction(kSleepTimeUsCount)) {
+            mExpired.store(true);
+            while (!mReset && !mExit) {
+               this_thread::sleep_for(microseconds(1));
+            }
+         }
+         mReset.store(false, memory_order_relaxed);
       }
-   } 
-
-   void SleepInIntervals() {
-      StopWatch timer;
-      size_t numberOfSleeps = GetNumberOfSleepIntervals();
-      while (KeepRunning() && numberOfSleeps > 0) {
-         mSleepFunction(kSmallestIntervalInUS);
-         --numberOfSleeps; 
-      }
-      auto currentSleptFor = timer.ElapsedUs();
-      if (KeepRunning()) {
-         SleepForRemainder(currentSleptFor);
-      }
-      mExpired.store(true);
    }
 
-   bool KeepRunning() {
-      return !mExpired.load();
-   }
-   
-   unsigned int ConvertToMillisecondsCount(Duration t) {
-      return std::chrono::duration_cast<milliseconds>(t).count();
+   bool ExpireAtUs(unsigned int timeUsTillExpire) {
+      StopWatch sw;
+      // The loop introduces a 50 microsecond overhead because it accesses
+      // the two atomics. Therefore stopwatch is needed to ensure the alarm
+      // does not over sleep. 
+      while (sw.ElapsedUs() < timeUsTillExpire) {
+         this_thread::sleep_for(microseconds(25));
+         if (mReset || mExit) {
+            return false;
+         }
+      }
+
+      return true;
    }
    
    unsigned int ConvertToMicrosecondsCount(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t).count();
-   }
-   
-   microseconds ConvertToMicroseconds(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t);
+      return chrono::duration_cast<microseconds>(t).count();
    }
    
 private:
 
-   std::atomic<bool> mExpired;
-   const int kSleepTime;
-   const unsigned int kSleepTimeMsCount;
+   atomic<bool> mExpired;
+   atomic<bool> mExit;
+   atomic<bool> mReset;
    const unsigned int kSleepTimeUsCount;
-   std::function<void(unsigned int)> mSleepFunction;
-   std::future<void> mExited;
-   const unsigned int kSmallestIntervalInMS = 500;
-   const unsigned int kSmallestIntervalInUS = 500 * 1000; // 500ms
+   function<bool (unsigned int)> mAlarmExpiredFunction;
+   thread mAlarmThread;
 };

@@ -40,10 +40,6 @@ namespace {
    }
 }
 
-// template class AlarmClock<milliseconds>;
-// template class AlarmClock<seconds>;
-   template class AlarmClock<microseconds>;
-
 TEST_F(AlarmClockTest, GetUsSleepTimeInUs) {
    int us = 123456;
    AlarmClock<microseconds> alerter(us);

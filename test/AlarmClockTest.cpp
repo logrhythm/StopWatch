@@ -29,8 +29,8 @@ namespace {
    }
 
    template<typename Duration>
-   unsigned int ConvertToMicroSeconds(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t).count();
+   int ConvertToMicroSeconds(Duration t) {
+      return static_cast<int>(std::chrono::duration_cast<microseconds>(t).count());
    }
 
    bool FakeSleep(unsigned int usToSleep) {
@@ -49,13 +49,13 @@ TEST_F(AlarmClockTest, GetUsSleepTimeInUs) {
 TEST_F(AlarmClockTest, GetMsSleepTimeInUs) {
    int ms = 123456;
    AlarmClock<milliseconds> alerter(ms);
-   EXPECT_EQ(ConvertToMicroSeconds(milliseconds(ms)), static_cast<unsigned int>(alerter.SleepTimeUs()));
+   EXPECT_EQ(ConvertToMicroSeconds(milliseconds(ms)), alerter.SleepTimeUs());
 }
 
 TEST_F(AlarmClockTest, GetSecSleepTimeInUs) {
    int sec = 1;
    AlarmClock<seconds> alerter(sec);
-   EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), static_cast<unsigned int>(alerter.SleepTimeUs()));
+   EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), alerter.SleepTimeUs());
 }
 
 TEST_F(AlarmClockTest, microsecondsLessThan500ms) {
@@ -133,7 +133,7 @@ TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {
    unsigned int sec = 1000;
    StopWatch sw;
    std::unique_ptr<AlarmClock<seconds>> acPtr(new AlarmClock<seconds>(sec));
-   EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), static_cast<unsigned int>(acPtr->SleepTimeUs()));
+   EXPECT_EQ(ConvertToMicroSeconds(seconds(sec)), acPtr->SleepTimeUs());
    acPtr.reset();
    EXPECT_TRUE(sw.ElapsedSec() < 2);
 }

@@ -3,7 +3,7 @@
  * Author: Craig Cogdill
  * Created: October 15, 2015 10:45am
  * Modifier: Amanda Carbonari
- * Modified Date: January 5, 2015 3:45pm
+ * Modified Date: January 5, 2016 3:45pm
  */
 
 #include "AlarmClockTest.h"
@@ -14,6 +14,7 @@
 #include <thread>
 
 std::atomic<unsigned int> AlarmClockTest::mFakeSleepUs(0);
+
 
 namespace {
    typedef std::chrono::microseconds microseconds;
@@ -28,8 +29,8 @@ namespace {
    }
 
    template<typename Duration>
-   unsigned int ConvertToMicroSeconds(Duration t) {
-      return std::chrono::duration_cast<microseconds>(t).count();
+   int ConvertToMicroSeconds(Duration t) {
+      return static_cast<int>(std::chrono::duration_cast<microseconds>(t).count());
    }
 
    bool FakeSleep(unsigned int usToSleep) {
@@ -64,7 +65,7 @@ TEST_F(AlarmClockTest, microsecondsLessThan500ms) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(us));
 }
 
 TEST_F(AlarmClockTest, microsecondsGreaterThan500ms) {
@@ -74,7 +75,7 @@ TEST_F(AlarmClockTest, microsecondsGreaterThan500ms) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(us));
 }
 
 TEST_F(AlarmClockTest, weirdNumberOfMicroseconds) {
@@ -85,7 +86,7 @@ TEST_F(AlarmClockTest, weirdNumberOfMicroseconds) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, us-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, us);
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(us));
 }
 
 TEST_F(AlarmClockTest, millisecondsLessThan500) {
@@ -95,7 +96,7 @@ TEST_F(AlarmClockTest, millisecondsLessThan500) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs()-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(alerter.SleepTimeUs()));
 }
 
 TEST_F(AlarmClockTest, oneSecondInMilliseconds) {
@@ -105,7 +106,7 @@ TEST_F(AlarmClockTest, oneSecondInMilliseconds) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs()-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(alerter.SleepTimeUs()));
 }
 
 TEST_F(AlarmClockTest, millisecondsNotDivisibleBy500) {
@@ -115,7 +116,7 @@ TEST_F(AlarmClockTest, millisecondsNotDivisibleBy500) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs()-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(alerter.SleepTimeUs()));
 }
 
 TEST_F(AlarmClockTest, secondsSimple) {
@@ -125,7 +126,7 @@ TEST_F(AlarmClockTest, secondsSimple) {
    WaitForAlarmClockToExpire(alerter);
    EXPECT_TRUE(alerter.Expired());
    EXPECT_GE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs()-kFakeSleepLeeway);
-   EXPECT_LE(AlarmClockTest::mFakeSleepUs, alerter.SleepTimeUs());
+   EXPECT_LE(AlarmClockTest::mFakeSleepUs, static_cast<unsigned int>(alerter.SleepTimeUs()));
 }
 
 TEST_F(AlarmClockTest, LongTimeout_ImmediatelyDestructed) {

@@ -1,6 +1,6 @@
 Name:          StopWatch
 Version:       %{version}
-Release:       1%{?dist}
+Release:       %{buildnumber}%{?dist}
 Summary:       An implemnetation of simple timer class in C++
 Group:         Development/Tools
 License:       MIT

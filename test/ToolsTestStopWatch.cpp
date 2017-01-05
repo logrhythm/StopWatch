@@ -67,17 +67,37 @@ TEST_F(ToolsTestStopWatch, Restart) {
 TEST_F(ToolsTestStopWatch, Comparisons) {
    StopWatch watch{};
    std::this_thread::sleep_for(std::chrono::seconds(1));
+   auto elapsedNs = watch.ElapsedNs();
    auto elapsedUs = watch.ElapsedUs();
    auto elapsedMs = watch.ElapsedMs();
    auto elapsedSec = watch.ElapsedSec();
 
    // compare with itself
+   EXPECT_TRUE(elapsedNs / 1000 <= elapsedUs) << "ns: " << elapsedUs << ". us: " << elapsedUs;
    EXPECT_TRUE(elapsedUs / 1000 <= elapsedMs) << "us: " << elapsedUs << ". ms: " << elapsedMs;
    EXPECT_TRUE(elapsedMs / 1000 <= elapsedSec);
    EXPECT_TRUE(elapsedUs >= 1000000);
    EXPECT_TRUE(elapsedMs >= 1000);
    EXPECT_TRUE(elapsedSec >= 1);
 }
+
+TEST_F(ToolsTestStopWatch, PrecisionComparisons) {
+   PrecisionStopWatch watch{};
+   std::this_thread::sleep_for(std::chrono::seconds(1));
+   auto elapsedNs = watch.ElapsedNs();
+   auto elapsedUs = watch.ElapsedUs();
+   auto elapsedMs = watch.ElapsedMs();
+   auto elapsedSec = watch.ElapsedSec();
+
+   // compare with itself
+   EXPECT_TRUE(elapsedNs / 1000 <= elapsedUs) << "ns: " << elapsedUs << ". us: " << elapsedUs;
+   EXPECT_TRUE(elapsedUs / 1000 <= elapsedMs) << "us: " << elapsedUs << ". ms: " << elapsedMs;
+   EXPECT_TRUE(elapsedMs / 1000 <= elapsedSec);
+   EXPECT_TRUE(elapsedUs >= 1000000);
+   EXPECT_TRUE(elapsedMs >= 1000);
+   EXPECT_TRUE(elapsedSec >= 1);
+}
+
 
 
 TEST_F(ToolsTestStopWatch, ComparisonsWithOld) {

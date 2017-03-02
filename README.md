@@ -3,9 +3,9 @@ AlarmClock
 ==========
 This gives the option to query whether a specified time period has expired. The utility is made to have a very low CPU clock cycle cost for the client compared to using StopWatch or std::chrono.
 
-The implementation of AlarmClock was made to be  as accurate as possible, with the assumption that low CPU usage and cheap, CPU wise,  API calls are more important than absolute accuracy in terms of some extra microseconds of expiration overhead. 
+The implementation of AlarmClock was made to be  as accurate as possible, with the assumption that low CPU usage and cheap, CPU-wise,  API calls are more important than absolute accuracy in terms of some extra microseconds of expiration overhead. 
 
-Common expiration time overhead ranged from 50 - 150 microseconds on the current testing platform when the Alarm clock was checked for expiration in a continous loop. (which normally is not a good usage pattern)
+Common expiration time overhead ranged from 50 - 150 microseconds on the current testing platform when the Alarm clock was checked for expiration in a continuous loop (which normally is not a good usage pattern).
 
 The API usage can be found in: [[AlarmClock.h]](https://github.com/LogRhythm/StopWatch/blob/master/src/AlarmClock.h) and in [[AlarmClockTest.cpp]](https://github.com/LogRhythm/StopWatch/blob/master/test/AlarmClockTest.cpp)
 

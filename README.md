@@ -17,7 +17,7 @@ StopWatch
 A timer class in C++ which wraps the std::chrono API, with the purpose of retrieving elapsed time since creation of the object or since the timing was restarted. 
 Measurements are available in microseconds, milliseconds and seconds.
 
-The API can be found in [[StopWatch.h]](https://github.com/LogRhythm/StopWatch/blob/master/src/StopWatch.h) and example usage can be found in the [[tests]](https://github.com/LogRhythm/StopWatch/blob/master/test/ToolsTestStopWatch.cpp)
+The API can be found in [[StopWatch.h]](https://github.com/LogRhythm/StopWatch/blob/master/src/StopWatch.h) and example usage can be found in the [[tests]](https://github.com/LogRhythm/StopWatch/blob/master/test/ToolsTestStopWatch.cpp).
 
 
 ThreadSafeStopWatch

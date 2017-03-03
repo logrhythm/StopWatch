@@ -1,3 +1,3 @@
 StopWatch
 =========
-iTest A timer class in C++
+iTest A tsssimer class in C++

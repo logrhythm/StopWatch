@@ -25,3 +25,8 @@ ThreadSafeStopWatch
 
 A replacement for `thread_local StopWatch` on platforms that do not have the `thread_local` keyword accessible. It implements the `thread_local` through a `lazy-barber` map access solution.
 If `thread_local` is available on your platform then `thread_local StopWatch` is likely a better choice than using the`ThreadSafeStopWatch`
+
+
+## Requirements
+1. [g3log](https://github.com/KjellKod/g3log)
+2. [g3sinks](https://github.com/KjellKod/g3sinks) 

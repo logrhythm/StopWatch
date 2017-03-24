@@ -30,3 +30,20 @@ If `thread_local` is available on your platform then `thread_local StopWatch` is
 ## Requirements
 1. [g3log](https://github.com/KjellKod/g3log)
 2. [g3sinks](https://github.com/KjellKod/g3sinks) 
+
+## BUILD
+```
+cd 3rdparty
+unzip gtest-1.7.0.zip
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+Alternative on Debian systems
+```
+make package
+sudo dpkg -i LRStopWatch<package_version>Linux.deb
+```

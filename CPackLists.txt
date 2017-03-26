@@ -27,12 +27,12 @@ SET(CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION})
 SET(CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION})
 SET(CPACK_PACKAGE_VERSION_PATCH ${BUILD_NUMBER})
 SET(CPACK_PACKAGE_DESCRIPTION "LRStopWatch is a library with utilities around time expiration and timing. 
-                              StopWatch: is a wrapper around the std::chrono API for easy time expiration retrieval.  
-                              AlarmClock: is a high Performance Timer. 
-                              The AlarmClock has a low CPU clock cycle cost to retrieve the status for time expiration. 
-                              The AlarmClock is suitable where retrieval of elapsed time, using std::chrono, is considered too expensive.
-                              MIT License. Copyright (c) 2014 LogRhythm. 
-                              Repository: https://github.com/LogRhythm/StopWatch")
+      StopWatch: is a wrapper around the std::chrono API for easy time expiration retrieval.  
+      AlarmClock: is a high Performance Timer. 
+      The AlarmClock has a low CPU clock cycle cost to retrieve the status for time expiration. 
+      The AlarmClock is suitable where retrieval of elapsed time, using std::chrono, is considered too expensive.
+      MIT License. Copyright (c) 2014 LogRhythm. 
+      Repository: https://github.com/LogRhythm/StopWatch")
 
 
 
@@ -42,30 +42,6 @@ SET(CPACK_PACKAGE_CONTACT "LogRhythm kjell.hedstrom@logrhythm.com")
 SET(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SRC}/../LICENSE)
 SET(CPACK_PACKAGE_VENDOR "LogRhythm")
 SET(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SRC}/../LICENSE)
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-   MESSAGE("\nTo create installation package: ")
-   MESSAGE("make package")
-ENDIF()
-MESSAGE("\nOption to install using 'sudo make install")
-MESSAGE("Installation locations: ")
-MESSAGE("====================")
-MESSAGE("Headers: ${CPACK_INSTALL_PREFIX}/${CMAKE_INSTALL_HEADERDIR}")
-MESSAGE("Library : ${CPACK_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-# MESSAGE("Headers to be installed: ${HEADER_FILES}")
-
-MESSAGE("For more information please see StopWatch/CPackLists.txt")
-MESSAGE("To install: sudo dpkg -i LRStopWatch-<version>-Linux.deb")
-MESSAGE("To list files in install package: sudo dpkg --contents RStopWatch-<version>-Linux.deb")
-MESSAGE("To list installed files: sudo dpkg -L LRStopWatch")
-MESSAGE("To remove: sudo dpkg -r LRStopWatch")
-MESSAGE("To remove: sudo dpkg -r LRStopWatch")
-
-#  NOTE: to change installation locations you can use the settings below
-#  examples:
-#  CPACK_INSTALL_PREFIX
-#  CMAKE_INSTALL_HEADERDIR
-#  CMAKE_INSTALL_LIBDIR
 
 SET(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Output dir for libraries")
 SET(CMAKE_INSTALL_HEADERDIR include CACHE PATH "Output dir for headers")
@@ -91,5 +67,28 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
    SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "LogRhythm")
 ENDIF()
 
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+   MESSAGE("\nTo create installation package: ")
+   MESSAGE("make package")
+ENDIF()
+MESSAGE("\nOption to install using 'sudo make install")
+MESSAGE("Installation locations: ")
+MESSAGE("====================")
+MESSAGE("Headers: ${CPACK_INSTALL_PREFIX}/${CMAKE_INSTALL_HEADERDIR}")
+MESSAGE("Library : ${CPACK_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+
+MESSAGE("For more information please see StopWatch/CPackLists.txt")
+MESSAGE("To install: sudo dpkg -i LRStopWatch-<version>-Linux.deb")
+MESSAGE("To list files in install package: sudo dpkg --contents RStopWatch-<version>-Linux.deb")
+MESSAGE("To list installed files: sudo dpkg -L LRStopWatch")
+MESSAGE("To remove: sudo dpkg -r LRStopWatch")
+MESSAGE("To remove: sudo dpkg -r LRStopWatch")
+
+#  NOTE: to change installation locations you can use the settings below
+#  examples:
+#  CPACK_INSTALL_PREFIX
+#  CMAKE_INSTALL_HEADERDIR
+#  CMAKE_INSTALL_LIBDIR
 
 INCLUDE(CPack)

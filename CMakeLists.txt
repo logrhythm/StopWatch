@@ -62,12 +62,6 @@ TARGET_LINK_LIBRARIES(${LIBRARY_TO_BUILD})
 # create the unit tests
 # =========================
 
-find_library(G3LOG g3logger PATHS /usr/local/probe/lib )
-set(TEST_LIBS ${G3LOG})
-
-find_library(G3FILE_ROTATE g3logrotate PATHS /usr/local/probe/lib)
-list(APPEND TEST_LIBS ${G3FILE_ROTATE})
-
 set(GTEST_DIR ${DIR_3RDPARTY}/gtest-1.7.0)
 set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
 MESSAGE( "Attempt to build gtest. gtest directory: " ${GTEST_DIR})

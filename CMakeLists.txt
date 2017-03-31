@@ -77,8 +77,10 @@ file(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
 target_link_libraries(UnitTestRunner ${LIBRARY_TO_BUILD} gtest_170_lib ${TEST_LIBS})
 set_target_properties(${test} PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
+
 add_executable(PerformanceTester AlarmClockSpeedTest.cpp)
-target_link_libraries(PerformanceTester stdc++ ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
+target_link_libraries(PerformanceTester stdc++ ${PLATFORM_LINK_LIBRIES} ${LIBRARY_TO_BUILD} )
+set_target_properties(PerformanceTester PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
 
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

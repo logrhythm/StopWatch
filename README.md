@@ -38,6 +38,11 @@ make
 sudo make install
 ```
 
+## To run unit tests in the build directory
+```
+./UnitTestRunner
+```
+
 Alternative on Debian systems
 ```
 make package

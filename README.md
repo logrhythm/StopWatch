@@ -25,3 +25,26 @@ ThreadSafeStopWatch
 
 A replacement for `thread_local StopWatch` on platforms that do not have the `thread_local` keyword accessible. It implements the `thread_local` through a `lazy-barber` map access solution.
 If `thread_local` is available on your platform then `thread_local StopWatch` is likely a better choice than using the`ThreadSafeStopWatch`
+
+
+## BUILD
+```
+cd 3rdparty
+unzip gtest-1.7.0.zip
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+## To run unit tests in the build directory
+```
+./UnitTestRunner
+```
+
+Alternative on Debian systems
+```
+make package
+sudo dpkg -i LRStopWatch<package_version>Linux.deb
+```

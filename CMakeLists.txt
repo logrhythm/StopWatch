@@ -8,7 +8,7 @@
 
 cmake_minimum_required (VERSION 2.6)
 ENABLE_LANGUAGE(CXX)
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 project (StopWatch)
 set(PROJECT_SRC ${StopWatch_SOURCE_DIR}/src)
@@ -19,8 +19,6 @@ set(DIR_3RDPARTY ${StopWatch_SOURCE_DIR}/3rdparty)
 MESSAGE(" PROJECT_SRC = : ${PROJECT_SRC}")
 include_directories(${PROJECT_SRC})
 SET(ACTIVE_CPP0xx_DIR "Release")
-
-find_library(TCMALLOC tcmalloc PATHS /usr/local/probe/lib )
 
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    MESSAGE("")
@@ -40,24 +38,37 @@ file(GLOB SRC_FILES ${PROJECT_SRC}/*.h ${PROJECT_SRC}/*.hpp ${PROJECT_SRC}/*.cpp
 # Name for the library
 SET(LIBRARY_TO_BUILD StopWatch)
 
+SET(MAJOR_VERSION 1)
+
+# Find the current version if not already set
+# =============================================
+# workaround due to cmake 2.8 or otherwise where variables cannot 
+# easily be detected for existance
+# i.e the following does NOT work 
+# IF (NOT DEFINED ${VERSION})
+#
+IF (${VERSION}.x STREQUAL ".x")
+   MESSAGE("Extracting git software version")
+   execute_process(COMMAND bash "-c" "git rev-list --branches HEAD | wc -l | tr -d ' ' | tr -d '\n'" OUTPUT_VARIABLE GIT_VERSION)
+   SET(MINOR_VERSION ${GIT_VERSION})
+   SET(BUILD_NUMBER 0)
+   SET(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}) 
+ENDIF()
+MESSAGE("Software Version: ${VERSION}")
+
+
 # Create the StopWatch library
 include_directories(${PROJECT_SRC})
 add_library(${LIBRARY_TO_BUILD} SHARED  ${SRC_FILES})
 SET(StopWatch_VERSION_STRING ${VERSION})
 SET_TARGET_PROPERTIES(${LIBRARY_TO_BUILD} PROPERTIES LINKER_LANGUAGE CXX SOVERSION ${VERSION})
-TARGET_LINK_LIBRARIES(${LIBRARY_TO_BUILD} ${TCMALLOC})
+TARGET_LINK_LIBRARIES(${LIBRARY_TO_BUILD})
 
 
 
 
 # create the unit tests
 # =========================
-
-find_library(G3LOG g3logger PATHS /usr/local/probe/lib )
-set(TEST_LIBS ${G3LOG})
-
-find_library(G3FILE_ROTATE g3logrotate PATHS /usr/local/probe/lib)
-list(APPEND TEST_LIBS ${G3FILE_ROTATE})
 
 set(GTEST_DIR ${DIR_3RDPARTY}/gtest-1.7.0)
 set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
@@ -74,5 +85,20 @@ file(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
 target_link_libraries(UnitTestRunner ${LIBRARY_TO_BUILD} gtest_170_lib ${TEST_LIBS})
 set_target_properties(${test} PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
+
 add_executable(PerformanceTester AlarmClockSpeedTest.cpp)
-target_link_libraries(PerformanceTester stdc++ boost_thread boost_system tcmalloc ${PLATFORM_LINK_LIBRIES} StopWatch -Wl,-rpath,. -Wl,-rpath,/usr/local/probe/lib  -Wl,-rpath,/usr/local/probe/lib64 )
+target_link_libraries(PerformanceTester stdc++ ${PLATFORM_LINK_LIBRIES} ${LIBRARY_TO_BUILD} )
+set_target_properties(PerformanceTester PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
+
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   FILE(GLOB HEADER_FILES ${PROJECT_SRC}/*.h)
+   # ==========================================================================
+   #   Package handling is done AFTER all other CMake setup
+   #   usage:   make package
+   #   Check the output result and install accordingly.
+   # ==========================================================================
+   INCLUDE (${PROJECT_SRC}/../CPackLists.txt)
+ENDIF()
+
+

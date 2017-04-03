@@ -1,11 +1,8 @@
-#include <stdio.h>
+#include <cstdio>
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 #include <thread>
-#include <google/protobuf/stubs/common.h>
-
 
 int main(int argc, char *argv[])
 {

@@ -5,6 +5,7 @@ Summary:       An implemnetation of simple timer class in C++
 Group:         Development/Tools
 License:       MIT
 BuildRequires: probecmake >= 2.8
+Requires:      dpiUser
 ExclusiveArch: x86_64
 
 %description

@@ -19,21 +19,22 @@ void TimeStats::Save(long long ns) {
 size_t TimeStats::ElapsedSec() {
    return mStopWatch.ElapsedSec();
 }
-void TimeStats::Flush(std::string& str) {
-   str = {"Count: "};
+std::string TimeStats::FlushAsString() {
+   std::string str = {"Count: "};
    str += std::to_string(mCount)
           + ", Min time: " + std::to_string(mMinTime)  + " ns"
           + ", Max time: " + std::to_string(mMaxTime) + " ns : "
           + std::to_string(mMaxTime / 1000) + " us" +
           ", Average: " + std::to_string(GetAverage()) + " ns : " + std::to_string(GetAverage() / 1000) + " us";
    Reset();
+   return str;
 }
 
 
-TimeStats::Metrics TimeStats::Flush() {
-   auto result = std::make_tuple(mMinTime, mMaxTime, mCount, mTotalTime, GetAverage());
+TimeStats::Metrics TimeStats::FlushAsMetrics() {
+   TimeStats::Metrics metrics = std::make_tuple(mMinTime, mMaxTime, mCount, mTotalTime, GetAverage());
    Reset();
-   return result;
+   return metrics;
 }
 
 

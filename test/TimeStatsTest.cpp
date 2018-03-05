@@ -16,7 +16,7 @@ namespace {
 
 TEST_F(TimeStatsTest, StatsEmpty) {
    TimeStats stats;
-   auto metrics =  stats.Flush();
+   TimeStats::Metrics metrics = stats.FlushAsMetrics();
    EXPECT_EQ(std::numeric_limits<long long>::max(), std::get<TimeStats::Index::MinTime>(metrics));
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::MaxTime>(metrics));
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::Count>(metrics));
@@ -26,8 +26,7 @@ TEST_F(TimeStatsTest, StatsEmpty) {
 
 TEST_F(TimeStatsTest, StatsEmpty2) {
    TimeStats stats;
-   std::string metrics = "to be erased";
-   stats.Flush(metrics);
+   std::string metrics = stats.FlushAsString();
    std::string expected = "Count: 0, Min time: ";
    expected += std::to_string(std::numeric_limits<long long>::max());
    expected += " ns, Max time: 0 ns : 0 us,";
@@ -40,7 +39,7 @@ TEST_F(TimeStatsTest, SimpleSetup) {
    TimeStats stats;
    stats.Save(kNanoSecMinFake);
    stats.Save(kNanoSecMaxFake);
-   auto metrics =  stats.Flush();
+   TimeStats::Metrics metrics = stats.FlushAsMetrics();
    EXPECT_EQ(kNanoSecMinFake, std::get<TimeStats::Index::MinTime>(metrics));
    EXPECT_EQ(kNanoSecMaxFake, std::get<TimeStats::Index::MaxTime>(metrics));
    EXPECT_EQ(2, std::get<TimeStats::Index::Count>(metrics));
@@ -54,8 +53,7 @@ TEST_F(TimeStatsTest, SimpleSetup2) {
    long long kNanoSecMaxFake = 300;
    stats.Save(kNanoSecMinFake);
    stats.Save(kNanoSecMaxFake);
-   std::string metrics = "to be erased";
-   stats.Flush(metrics);
+   std::string metrics = stats.FlushAsString();
    std::string expected = "Count: 2, Min time: 100";
    expected += " ns, Max time: 300 ns : 0 us,";
    expected += " Average: 200 ns : 0 us";
@@ -74,11 +72,11 @@ TEST_F(TimeStatsTest, TimeTrigger1s) {
          std::this_thread::sleep_for(1ms);
       }
    }
-   auto metrics =  stats.Flush();
+   TimeStats::Metrics metrics = stats.FlushAsMetrics();
    long long expectedMinNs = 1 * 1000000;
    EXPECT_GT(std::get<TimeStats::Index::MinTime>(metrics), expectedMinNs);
 
-   auto zeroMetrics = stats.Flush();
+   auto zeroMetrics = stats.FlushAsMetrics();
    EXPECT_EQ(std::numeric_limits<long long>::max(), std::get<TimeStats::Index::MinTime>(zeroMetrics));
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::MaxTime>(zeroMetrics));
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::Count>(zeroMetrics));

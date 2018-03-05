@@ -36,7 +36,7 @@ class TimeStats {
    ~TimeStats() = default;
 
    void Save(long long ns);
-   void Flush(std::string& str);
+   std::string FlushAsString();
    enum Index { MinTime = 0,
                 MaxTime = 1,
                 Count = 2,
@@ -45,7 +45,7 @@ class TimeStats {
               };
 
    using Metrics = std::tuple<long long, long long, long long, long long, long long>;
-   Metrics Flush();
+    TimeStats::Metrics FlushAsMetrics();
    size_t ElapsedSec();
 
  private:

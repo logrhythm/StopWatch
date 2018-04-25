@@ -1,5 +1,11 @@
-/**
+#pragma once
 
+#include "TimeStats.h"
+#include "StopWatch.h"
+
+
+
+/**
 Example usage:
 TriggerTimeStats is a helper for TimeStats
 It is a scope triggered "save" that makes it easy to use without code bloat.
@@ -15,15 +21,8 @@ while(thread_loop) {
       func();
    } // scope exits and `func` is measured.
 }
-
-
 */
-#include "TimeStats.h"
-#include "StopWatch.h"
-
 class TriggerTimeStats {
-
-
  public:
    TriggerTimeStats(TimeStats& timeStats)
       : mTimeStats(timeStats)
@@ -42,7 +41,7 @@ class TriggerTimeStats {
       mSkip = true;
    }
 
-   
+
  private:
    TimeStats& mTimeStats;
    StopWatch mStopWatch;

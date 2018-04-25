@@ -85,3 +85,23 @@ TEST_F(TimeStatsTest, TimeTrigger1s) {
 }
 
 
+TEST_F(TimeStatsTest, SkipTrigger) {
+   TimeStats stats;
+   {
+      TriggerTimeStats trigger{stats}; // implicit &
+      trigger.Skip();
+   }
+   auto zeroMetrics = stats.FlushAsMetrics();
+   EXPECT_EQ(kEmpty, std::get<TimeStats::Index::Count>(zeroMetrics));
+}
+
+TEST_F(TimeStatsTest, NoSkipTrigger) {
+   TimeStats stats;
+   {
+      TriggerTimeStats trigger{stats}; // implicit &
+   }
+   auto oneMetric = stats.FlushAsMetrics();
+   EXPECT_EQ(1, std::get<TimeStats::Index::Count>(oneMetric));
+}
+
+

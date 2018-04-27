@@ -21,8 +21,8 @@ size_t TimeStats::ElapsedSec() {
 }
 std::string TimeStats::FlushAsString() {
    if (0 == mCount) {
-    Reset();
-    return std::string{"Count: 0, no measurements available"};
+      Reset();
+      return std::string{"Count: 0, no measurements available"};
    }
 
    std::string str = {"Count: "};
@@ -42,6 +42,9 @@ TimeStats::Metrics TimeStats::FlushAsMetrics() {
    return metrics;
 }
 
+bool TimeStats::HasMetrics() {
+   return (mCount > 0);
+}
 
 long long TimeStats::GetAverage() {
    if (mCount == 0) {

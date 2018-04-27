@@ -20,6 +20,11 @@ size_t TimeStats::ElapsedSec() {
    return mStopWatch.ElapsedSec();
 }
 std::string TimeStats::FlushAsString() {
+   if (0 == mCount) {
+    Reset();
+    return std::string{"Count: 0, no measurements available"};
+   }
+
    std::string str = {"Count: "};
    str += std::to_string(mCount)
           + ", Min time: " + std::to_string(mMinTime)  + " ns"

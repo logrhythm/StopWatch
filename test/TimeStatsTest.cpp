@@ -27,11 +27,7 @@ TEST_F(TimeStatsTest, StatsEmpty) {
 TEST_F(TimeStatsTest, StatsEmpty2) {
    TimeStats stats;
    std::string metrics = stats.FlushAsString();
-   std::string expected = "Count: 0, Min time: ";
-   expected += std::to_string(std::numeric_limits<long long>::max());
-   expected += " ns, Max time: 0 ns : 0 us,";
-   expected += " Average: 0 ns : 0 us";
-   EXPECT_EQ(metrics, expected);
+   EXPECT_EQ("Count: 0, no measurements available", metrics);
 }
 
 

@@ -26,6 +26,7 @@ TEST_F(TimeStatsTest, StatsEmpty) {
 
 TEST_F(TimeStatsTest, StatsEmpty2) {
    TimeStats stats;
+   EXPECT_FALSE(stats.HasMetrics());
    std::string metrics = stats.FlushAsString();
    EXPECT_EQ("Count: 0, no measurements available", metrics);
 }
@@ -34,6 +35,7 @@ TEST_F(TimeStatsTest, StatsEmpty2) {
 TEST_F(TimeStatsTest, SimpleSetup) {
    TimeStats stats;
    stats.Save(kNanoSecMinFake);
+   EXPECT_TRUE(stats.HasMetrics());
    stats.Save(kNanoSecMaxFake);
    TimeStats::Metrics metrics = stats.FlushAsMetrics();
    EXPECT_EQ(kNanoSecMinFake, std::get<TimeStats::Index::MinTime>(metrics));

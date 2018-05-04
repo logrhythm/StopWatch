@@ -47,6 +47,7 @@ class TimeStats {
    using Metrics = std::tuple<long long, long long, long long, long long, long long>;
     TimeStats::Metrics FlushAsMetrics();
    size_t ElapsedSec();
+   bool HasMetrics();
 
  private:
    void Reset();

@@ -26,18 +26,16 @@ TEST_F(TimeStatsTest, StatsEmpty) {
 
 TEST_F(TimeStatsTest, StatsEmpty2) {
    TimeStats stats;
+   EXPECT_FALSE(stats.HasMetrics());
    std::string metrics = stats.FlushAsString();
-   std::string expected = "Count: 0, Min time: ";
-   expected += std::to_string(std::numeric_limits<long long>::max());
-   expected += " ns, Max time: 0 ns : 0 us,";
-   expected += " Average: 0 ns : 0 us";
-   EXPECT_EQ(metrics, expected);
+   EXPECT_EQ("Count: 0, no measurements available", metrics);
 }
 
 
 TEST_F(TimeStatsTest, SimpleSetup) {
    TimeStats stats;
    stats.Save(kNanoSecMinFake);
+   EXPECT_TRUE(stats.HasMetrics());
    stats.Save(kNanoSecMaxFake);
    TimeStats::Metrics metrics = stats.FlushAsMetrics();
    EXPECT_EQ(kNanoSecMinFake, std::get<TimeStats::Index::MinTime>(metrics));
@@ -82,6 +80,26 @@ TEST_F(TimeStatsTest, TimeTrigger1s) {
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::Count>(zeroMetrics));
    EXPECT_EQ(kEmpty, std::get<TimeStats::Index::TotalTime>(zeroMetrics));
    EXPECT_EQ(0, std::get<TimeStats::Index::Average>(zeroMetrics));
+}
+
+
+TEST_F(TimeStatsTest, SkipTrigger) {
+   TimeStats stats;
+   {
+      TriggerTimeStats trigger{stats}; // implicit &
+      trigger.Skip();
+   }
+   auto zeroMetrics = stats.FlushAsMetrics();
+   EXPECT_EQ(kEmpty, std::get<TimeStats::Index::Count>(zeroMetrics));
+}
+
+TEST_F(TimeStatsTest, NoSkipTrigger) {
+   TimeStats stats;
+   {
+      TriggerTimeStats trigger{stats}; // implicit &
+   }
+   auto oneMetric = stats.FlushAsMetrics();
+   EXPECT_EQ(1, std::get<TimeStats::Index::Count>(oneMetric));
 }
 
 

@@ -13,7 +13,7 @@ set(CMAKE_BUILD_TYPE Release)
 project (StopWatch)
 set(PROJECT_SRC ${StopWatch_SOURCE_DIR}/src)
 set(DIR_UNIT_TEST ${StopWatch_SOURCE_DIR}/test)
-set(DIR_3RDPARTY ${StopWatch_SOURCE_DIR}/3rdparty)
+set(DIR_3RDPARTY ${StopWatch_SOURCE_DIR}/thirdparty)
 
 
 MESSAGE(" PROJECT_SRC = : ${PROJECT_SRC}")
@@ -82,7 +82,7 @@ include_directories(test)
 include_directories(${PROJECT_SRC})
 file(GLOB TEST_SRC_FILES "test/*.cpp")
 
-add_executable(UnitTestRunner 3rdparty/test_main.cpp ${TEST_SRC_FILES} )
+add_executable(UnitTestRunner thirdparty/test_main.cpp ${TEST_SRC_FILES} )
 target_link_libraries(UnitTestRunner ${LIBRARY_TO_BUILD} gtest_170_lib ${TEST_LIBS})
 set_target_properties(${test} PROPERTIES COMPILE_FLAGS "-isystem -pthread ")
 

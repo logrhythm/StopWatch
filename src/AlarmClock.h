@@ -16,14 +16,13 @@
 #include <functional>
 #include <iostream>
 #include "StopWatch.h"
-using namespace std;
 
 template<typename Duration> class AlarmClock {
 public:
-   typedef chrono::microseconds microseconds;
+   typedef std::chrono::microseconds microseconds;
 
    // The sleep function is passed in for the unit tests. 
-   AlarmClock(unsigned int sleepDuration, function<bool (unsigned int)> funcPtr = nullptr) : mExpired(false),
+   AlarmClock(unsigned int sleepDuration, std::function<bool (unsigned int)> funcPtr = nullptr) : mExpired(false),
       mExit(false),
       mReset(false),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
@@ -34,11 +33,11 @@ public:
                return ExpireAtUs(sleepTime); 
             }; 
          }
-         mAlarmThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
+         mAlarmThread = std::thread(&AlarmClock::AlarmClockInterruptableThread, this);
       }
 
    virtual ~AlarmClock() {
-      mExit.store(true, memory_order_relaxed);
+      mExit.store(true, std::memory_order_release);
       if (mAlarmThread.joinable()) {
          mAlarmThread.join();
       }
@@ -49,8 +48,8 @@ public:
    }
 
    void Reset() {
-      mReset.store(true, memory_order_relaxed);
-      mExpired.store(false);
+      mReset.store(true, std::memory_order_release);
+      mExpired.store(false, std::memory_order_release);
    }
 
    int SleepTimeUs() {
@@ -62,12 +61,12 @@ protected:
    void AlarmClockInterruptableThread() {
       while(!mExit) {
          if(mAlarmExpiredFunction(kSleepTimeUsCount)) {
-            mExpired.store(true);
+            mExpired.store(true, std::memory_order_release);
             while (!mReset && !mExit) {
                this_thread::sleep_for(microseconds(1));
             }
          }
-         mReset.store(false, memory_order_relaxed);
+         mReset.store(false, std::memory_order_release);
       }
    }
 
@@ -87,15 +86,15 @@ protected:
    }
    
    unsigned int ConvertToMicrosecondsCount(Duration t) {
-      return chrono::duration_cast<microseconds>(t).count();
+      return std::chrono::duration_cast<microseconds>(t).count();
    }
    
 private:
 
-   atomic<bool> mExpired;
-   atomic<bool> mExit;
-   atomic<bool> mReset;
+   std::atomic<bool> mExpired;
+   std::atomic<bool> mExit;
+   std::atomic<bool> mReset;
    const unsigned int kSleepTimeUsCount;
-   function<bool (unsigned int)> mAlarmExpiredFunction;
-   thread mAlarmThread;
+   std::function<bool (unsigned int)> mAlarmExpiredFunction;
+   std::thread mAlarmThread;
 };

@@ -63,7 +63,7 @@ protected:
          if(mAlarmExpiredFunction(kSleepTimeUsCount)) {
             mExpired.store(true, std::memory_order_release);
             while (!mReset && !mExit) {
-               this_thread::sleep_for(microseconds(1));
+               std::this_thread::sleep_for(microseconds(1));
             }
          }
          mReset.store(false, std::memory_order_release);
@@ -76,7 +76,7 @@ protected:
       // the two atomics. Therefore stopwatch is needed to ensure the alarm
       // does not over sleep. 
       while (sw.ElapsedUs() < timeUsTillExpire) {
-         this_thread::sleep_for(microseconds(25));
+         std::this_thread::sleep_for(microseconds(25));
          if (mReset || mExit) {
             return false;
          }

@@ -59,10 +59,10 @@ public:
 protected:
 
    void AlarmClockInterruptableThread() {
-      while(!mExit) {
+      while(!mExit.load(std::memory_order_acquire)) {
          if(mAlarmExpiredFunction(kSleepTimeUsCount)) {
             mExpired.store(true, std::memory_order_release);
-            while (!mReset && !mExit) {
+            while (!mReset.load(std::memory_order_acquire) && !mExit.load(std::memory_order_acquire)) {
                std::this_thread::sleep_for(microseconds(1));
             }
          }
@@ -77,7 +77,7 @@ protected:
       // does not over sleep. 
       while (sw.ElapsedUs() < timeUsTillExpire) {
          std::this_thread::sleep_for(microseconds(25));
-         if (mReset || mExit) {
+         if (mReset.load(std::memory_order_acquire) || mExit.load(std::memory_order_acquire)) {
             return false;
          }
       }

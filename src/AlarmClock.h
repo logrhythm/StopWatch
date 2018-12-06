@@ -16,14 +16,13 @@
 #include <functional>
 #include <iostream>
 #include "StopWatch.h"
-using namespace std;
 
 template<typename Duration> class AlarmClock {
 public:
-   typedef chrono::microseconds microseconds;
+   typedef std::chrono::microseconds microseconds;
 
    // The sleep function is passed in for the unit tests. 
-   AlarmClock(unsigned int sleepDuration, function<bool (unsigned int)> funcPtr = nullptr) : mExpired(false),
+   AlarmClock(unsigned int sleepDuration, std::function<bool (unsigned int)> funcPtr = nullptr) : mExpired(false),
       mExit(false),
       mReset(false),
       kSleepTimeUsCount(ConvertToMicrosecondsCount(Duration(sleepDuration))),
@@ -34,23 +33,23 @@ public:
                return ExpireAtUs(sleepTime); 
             }; 
          }
-         mAlarmThread = thread(&AlarmClock::AlarmClockInterruptableThread, this);
+         mAlarmThread = std::thread(&AlarmClock::AlarmClockInterruptableThread, this);
       }
 
    virtual ~AlarmClock() {
-      mExit.store(true, memory_order_relaxed);
+      mExit.store(true, std::memory_order_release);
       if (mAlarmThread.joinable()) {
          mAlarmThread.join();
       }
    }
    
    bool Expired() {
-      return mExpired.load();
+      return mExpired.load(std::memory_order_acquire);
    }
 
    void Reset() {
-      mReset.store(true, memory_order_relaxed);
-      mExpired.store(false);
+      mReset.store(true, std::memory_order_release);
+      mExpired.store(false, std::memory_order_release);
    }
 
    int SleepTimeUs() {
@@ -60,14 +59,14 @@ public:
 protected:
 
    void AlarmClockInterruptableThread() {
-      while(!mExit) {
+      while(!mExit.load(std::memory_order_acquire)) {
          if(mAlarmExpiredFunction(kSleepTimeUsCount)) {
-            mExpired.store(true);
-            while (!mReset && !mExit) {
-               this_thread::sleep_for(microseconds(1));
+            mExpired.store(true, std::memory_order_release);
+            while (!mReset.load(std::memory_order_acquire) && !mExit.load(std::memory_order_acquire)) {
+               std::this_thread::sleep_for(microseconds(1));
             }
          }
-         mReset.store(false, memory_order_relaxed);
+         mReset.store(false, std::memory_order_release);
       }
    }
 
@@ -77,8 +76,8 @@ protected:
       // the two atomics. Therefore stopwatch is needed to ensure the alarm
       // does not over sleep. 
       while (sw.ElapsedUs() < timeUsTillExpire) {
-         this_thread::sleep_for(microseconds(25));
-         if (mReset || mExit) {
+         std::this_thread::sleep_for(microseconds(25));
+         if (mReset.load(std::memory_order_acquire) || mExit.load(std::memory_order_acquire)) {
             return false;
          }
       }
@@ -87,15 +86,15 @@ protected:
    }
    
    unsigned int ConvertToMicrosecondsCount(Duration t) {
-      return chrono::duration_cast<microseconds>(t).count();
+      return std::chrono::duration_cast<microseconds>(t).count();
    }
    
 private:
 
-   atomic<bool> mExpired;
-   atomic<bool> mExit;
-   atomic<bool> mReset;
+   std::atomic<bool> mExpired;
+   std::atomic<bool> mExit;
+   std::atomic<bool> mReset;
    const unsigned int kSleepTimeUsCount;
-   function<bool (unsigned int)> mAlarmExpiredFunction;
-   thread mAlarmThread;
+   std::function<bool (unsigned int)> mAlarmExpiredFunction;
+   std::thread mAlarmThread;
 };

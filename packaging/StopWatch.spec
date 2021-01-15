@@ -38,14 +38,14 @@ fi
 
 make -j6
 ./UnitTestRunner
-#if [ "%{buildtype}" == "-DUSE_LR_DEBUG=ON"  ]; then
-#   /usr/local/probe/bin/CodeCoverage.py
-#fi
+if [ "%{buildtype}" == "-DUSE_LR_DEBUG=ON"  ]; then
+   sudo chmod +x /usr/local/probe/bin
+   /usr/local/probe/bin/CodeCoverage.py
+fi
 mkdir -p $RPM_BUILD_ROOT/usr/local/probe/lib
 cp -rfd lib%{name}.so* $RPM_BUILD_ROOT/usr/local/probe/lib
 mkdir -p $RPM_BUILD_ROOT/usr/local/probe/include
 cp src/*.h $RPM_BUILD_ROOT/usr/local/probe/include
-
 
 %post
 
